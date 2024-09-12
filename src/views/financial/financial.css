@@ -1,0 +1,17 @@
+/* SubscriptionPlansPage.css */
+.ctable-actions .btn {
+    margin-right: 5px;
+  }
+  
+  .ctable-actions .btn:last-child {
+    margin-right: 0;
+  }
+  
+  .modal-close-btn {
+    font-size: 1.5rem;
+    color: #000;
+  }
+  /* Aligns the button to the right within its container */
+.text-right {
+  text-align: right;
+}
