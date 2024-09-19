@@ -22,7 +22,7 @@ import { cilLockLocked, cilUser } from '@coreui/icons';
 // Import your image here
 import logoImage from '../../../../public/logo.png'; // Replace with your actual image path
 
-const API_URL = 'http://3.111.163.2:8000/api/admin/login'; // Backend API URL
+const API_URL = 'http://localhost:8000/api/admin/login'; // Backend API URL
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -35,7 +35,7 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true); // Show loader when request starts
     try {
-      const response = await axios.post(API_URL, { email, password });
+      const response = await axios.post("http://localhost:8000/api/admin/login", { email, password });
       if (response.status === 200) {
         const { token } = response.data;
         localStorage.setItem('token', token);
