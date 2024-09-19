@@ -35,7 +35,7 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true); // Show loader when request starts
     try {
-      const response = await axios.post("http://localhost:8000/api/admin/login", { email, password });
+      const response = await axios.post("http://3.111.163.2:8000/api/admin/login", { email, password });
       if (response.status === 200) {
         const { token } = response.data;
         localStorage.setItem('token', token);
