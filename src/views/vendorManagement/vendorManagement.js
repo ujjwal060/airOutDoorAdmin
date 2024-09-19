@@ -1,255 +1,198 @@
-import React, { useState,useRef  } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  CCard,
-  CCardHeader,
-  CCardBody,
-  CButton,
-  CForm,
-  CFormInput,
   CTable,
   CTableHead,
   CTableRow,
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CAlert,
-  CModal,
-  CModalHeader,
-  CModalTitle,
-  CModalFooter,
-  CModalBody,
-  CListGroup,
-  CListGroupItem,
-  CFormSelect,
+  CButton,
+  CPagination,
+  CPaginationItem,
 } from "@coreui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faEye, faEdit, faCheck, faBan } from "@fortawesome/free-solid-svg-icons";
-import { FaTimes } from 'react-icons/fa';
-
-// Static data for vendor requests
-const staticVendorRequests = [
-  { _id: "1", name: "Vendor A", email: "vendor.a@example.com", contactNumber: "123-456-7890", status: "pending" },
-  { _id: "2", name: "Vendor B", email: "vendor.b@example.com", contactNumber: "987-654-3210", status: "pending" },
-  // Add more static vendor requests here
-];
+import { faCheck, faBan } from "@fortawesome/free-solid-svg-icons";
+import { FaTimes } from "react-icons/fa";
+import axios from "axios";
 
 const VendorManagement = () => {
-  const [visible, setVisible] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [users, setUsers] = useState(staticVendorRequests);
-  const [error, setError] = useState(null);
-  const [searchUser, setSearchUser] = useState('');
-  const [editMode, setEditMode] = useState(false);
-  const searchUserRef = useRef(searchUser);
+  const [users, setUsers] = useState([]);
+  const [searchUser, setSearchUser] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const LIMIT = 10;
 
-  const handleDelete = (id) => {
-    setUsers(users.filter((user) => user._id !== id));
+  const fetchUsers = async (page = 1, search = "") => {
+    try {
+      const response = await axios.post("http://localhost:8000/admin/getVendor", {
+        search: search,
+        page: page,
+        limit: LIMIT,
+      });
+      const result = await response.data;
+
+      setUsers(result.vendors);
+      setTotalPages(result.totalPages);
+      setCurrentPage(result.currentPage);
+      setTotalUsers(result.totalUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
   };
 
-  const handleSearchUser = (e) => {
-    const value = e.target.value;
-    setSearchUser(value);
-    searchUserRef.current = value;
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-    // Filter static data based on search input
-    const filteredUsers = staticVendorRequests.filter(user =>
-      user.name.toLowerCase().includes(value.toLowerCase())
-    );
-    setUsers(filteredUsers);
+  const handleSearchUser = (e) => {
+    setSearchUser(e.target.value);
+    fetchUsers(1, e.target.value);
   };
 
   const handleClear = () => {
-    setSearchUser('');
-    setUsers(staticVendorRequests);
+    setSearchUser("");
+    fetchUsers(1, "");
   };
 
-  const handleApprove = (id) => {
-    setUsers(users.map(user =>
-      user._id === id ? { ...user, status: "approved" } : user
-    ));
-    sendApprovalEmail(id); // Function to send email notification
+  const handleApprove = async (id) => {
+    try {
+      await axios.post("http://localhost:8000/admin/verify", {
+        vendorId: id,
+        status: "approved",
+      });
+      fetchUsers(currentPage, searchUser); 
+    } catch (error) {
+      console.error("Error approving vendor:", error);
+    }
   };
 
-  const handleReject = (id) => {
-    setUsers(users.map(user =>
-      user._id === id ? { ...user, status: "rejected" } : user
-    ));
+  const handleReject = async (id) => {
+    try {
+      console.log(id);
+      
+      await axios.post("http://localhost:8000/admin/verify", {
+        vendorId: id,
+        status: "rejected",
+      });
+      fetchUsers(currentPage, searchUser); 
+    } catch (error) {
+      console.error("Error rejecting vendor:", error);
+    }
   };
 
-  const sendApprovalEmail = (id) => {
-    // Placeholder function for sending email
-    const user = users.find(user => user._id === id);
-    alert(`Approval email sent to ${user.email}`);
-    // Integrate with email service for real implementation
-  };
-
-  const handleEdit = () => {
-    // Placeholder for actual edit logic
-    setEditMode(true);
-  };
-
-  const handleSave = () => {
-    // Placeholder for save logic
-    setEditMode(false);
-  };
-
-  const handleCancel = () => {
-    setEditMode(false);
-  };
-
-  const handlePasswordReset = (email) => {
-    alert(`Password reset link sent to ${email}`);
-  };
+  const startIndex = (currentPage - 1) * LIMIT + 1;
+  const endIndex = Math.min(currentPage * LIMIT, totalUsers);
 
   return (
     <>
-      {error && <CAlert color="danger">{error}</CAlert>}
-      <CCard>
-        <CCardHeader className="d-flex justify-content-between align-items-center">
-          <h3>Vendor Requests Management</h3>
-          <CForm className="d-flex align-items-center" style={{ width: '12rem', marginLeft: 'auto' }}>
-            <div style={{ position: 'relative', width: '100%' }}>
-              <CFormInput
-                type="text"
-                placeholder="Search by Name"
-                value={searchUser}
-                onChange={handleSearchUser}
-              />
-              {searchUser && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    right: '0.5rem',
-                    transform: 'translateY(-50%)',
-                    cursor: 'pointer'
-                  }}
-                  onClick={handleClear}
-                >
-                  <FaTimes size={16} />
-                </div>
-              )}
-            </div>
-          </CForm>
-        </CCardHeader>
+      <div className="search-container">
+        <input
+          type="text"
+          value={searchUser}
+          onChange={handleSearchUser}
+          placeholder="Search by Name"
+        />
+        {searchUser && <FaTimes onClick={handleClear} />}
+      </div>
 
-        <CCardBody>
-          <CTable responsive striped hover bordered>
-            <CTableHead color="dark">
-              <CTableRow>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>S.No</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Name</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Email</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Contact Number</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Status</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Action</CTableHeaderCell>
+      <CTable responsive striped hover bordered>
+        <CTableHead>
+          <CTableRow>
+            <CTableHeaderCell>S.No</CTableHeaderCell>
+            <CTableHeaderCell>Name</CTableHeaderCell>
+            <CTableHeaderCell>Email</CTableHeaderCell>
+            <CTableHeaderCell>Contact Number</CTableHeaderCell>
+            <CTableHeaderCell>Status</CTableHeaderCell>
+            <CTableHeaderCell>Action</CTableHeaderCell>
+          </CTableRow>
+        </CTableHead>
+        <CTableBody>
+          {users.length === 0 ? (
+            <CTableRow>
+              <CTableDataCell colSpan="6" className="text-center">
+                No data
+              </CTableDataCell>
+            </CTableRow>
+          ) : (
+            users.map((user, index) => (
+              <CTableRow key={user._id}>
+                <CTableDataCell>{startIndex + index}</CTableDataCell>
+                <CTableDataCell>{user.name}</CTableDataCell>
+                <CTableDataCell>{user.email}</CTableDataCell>
+                <CTableDataCell>{user.phone}</CTableDataCell>
+                <CTableDataCell>{user.status}</CTableDataCell>
+                <CTableDataCell>
+                  {user.status === "pending" && (
+                    <>
+                      <CButton onClick={() => handleApprove(user.vendorId)}>
+                        <FontAwesomeIcon icon={faCheck} />
+                      </CButton>
+                      <CButton onClick={() => handleReject(user.vendorId)}>
+                        <FontAwesomeIcon icon={faBan} />
+                      </CButton>
+                    </>
+                  )}
+                </CTableDataCell>
               </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {users.map((user, index) => (
-                <CTableRow key={user._id}>
-                  <CTableHeaderCell scope="row" style={{ textAlign: "center" }}>{index + 1}</CTableHeaderCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {user.name || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {user.email || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {user.contactNumber || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {user.status || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {user.status === "pending" && (
-                      <>
-                        <CButton size="sm" onClick={() => handleApprove(user._id)}>
-                          <FontAwesomeIcon icon={faCheck} style={{ color: "green" }} />
-                        </CButton>
-                        <CButton size="sm" onClick={() => handleReject(user._id)}>
-                          <FontAwesomeIcon icon={faBan} style={{ color: "#fd2b2b" }} />
-                        </CButton>
-                      </>
-                    )}
-                    {user.status === "approved" && (
-                      <CButton size="sm" disabled>
-                        <FontAwesomeIcon icon={faCheck} style={{ color: "green" }} />
-                      </CButton>
-                    )}
-                    {user.status === "rejected" && (
-                      <CButton size="sm" disabled>
-                        <FontAwesomeIcon icon={faBan} style={{ color: "#fd2b2b" }} />
-                      </CButton>
-                    )}
-                  </CTableDataCell>
-                </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
-        </CCardBody>
-      </CCard>
+            ))
+          )}
+        </CTableBody>
+      </CTable>
 
-      <CModal visible={visible} onClose={() => setVisible(false)}>
-        <CModalHeader onClose={() => setVisible(false)} closeButton>
-          <CModalTitle>User Details</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          <CListGroup>
-            <CListGroupItem><strong>Name: </strong> {selectedUser?.name}</CListGroupItem>
-            <CListGroupItem><strong>Email: </strong> {selectedUser?.email}</CListGroupItem>
-            <CListGroupItem><strong>Contact Number: </strong> {selectedUser?.contactNumber}</CListGroupItem>
-            <CListGroupItem>
-              <strong>Status: </strong> {selectedUser?.status}
-            </CListGroupItem>
-          </CListGroup>
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setVisible(false)}>
-            Close
-          </CButton>
-        </CModalFooter>
-      </CModal>
-
-      {/* Edit Modal */}
-      <CModal visible={editMode} onClose={() => setEditMode(false)}>
-        <CModalHeader onClose={() => setEditMode(false)} closeButton>
-          <CModalTitle>Edit User</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          {/* Placeholder form for editing */}
-          <CForm>
-            <CFormInput
-              label="Name"
-              defaultValue={selectedUser?.name}
-            />
-            <CFormInput
-              label="Email"
-              defaultValue={selectedUser?.email}
-            />
-            <CFormInput
-              label="Contact Number"
-              defaultValue={selectedUser?.contactNumber}
-            />
-            <CFormSelect
-              label="Role"
-              defaultValue={selectedUser?.role}
+      <div className="pagination">
+        <div className="total-users">Total : {totalUsers}</div>
+        <div className="pagination-controls">
+          <CPagination aria-label="Page navigation example">
+            <CPaginationItem
+              onClick={() => fetchUsers(currentPage - 1, searchUser)}
+              disabled={currentPage === 1}
             >
-              <option value="guest">Guest</option>
-              <option value="vendor">Vendor</option>
-              {/* Add other roles if necessary */}
-            </CFormSelect>
-          </CForm>
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setEditMode(false)}>
-            Cancel
-          </CButton>
-          <CButton color="primary" onClick={() => setEditMode(false)}>
-            Save Changes
-          </CButton>
-        </CModalFooter>
-      </CModal>
+              &lt;
+            </CPaginationItem>
+            <div className="pagination-info">
+              {startIndex}-{endIndex}
+            </div>
+            <CPaginationItem
+              onClick={() => fetchUsers(currentPage + 1, searchUser)}
+              disabled={currentPage === totalPages}
+            >
+              &gt;
+            </CPaginationItem>
+          </CPagination>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .search-container {
+          display: flex;
+          justify-content: flex-end;
+          margin-bottom: 20px;
+        }
+
+        .pagination {
+          margin-top: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 10px;
+        }
+
+        .pagination-info {
+          margin-right: 10px;
+        }
+
+        .pagination-controls {
+          display: flex;
+          align-items: center;
+        }
+
+        .total-users {
+          display: flex;
+          justify-content: flex-end;
+          margin-right: 20px;
+        }
+      `}</style>
     </>
   );
 };
