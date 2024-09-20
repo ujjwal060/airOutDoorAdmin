@@ -16,7 +16,7 @@ import { cilLockLocked, cilUser } from '@coreui/icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://3.111.163.2:3002/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002/api';
 
 const Register = () => {
   const [username, setUsername] = useState('');

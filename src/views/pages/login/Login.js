@@ -14,28 +14,25 @@ import {
   CInputGroup,
   CInputGroupText,
   CRow,
-  CSpinner // Import CSpinner for the loader
+  CSpinner
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser } from '@coreui/icons';
 
-// Import your image here
-import logoImage from '../../../../public/logo.png'; // Replace with your actual image path
-
-const API_URL = 'http://localhost:8000/api/admin/login'; // Backend API URL
+import logoImage from '../../../../public/logo.png'; 
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false); // State to track loading
-  const navigate = useNavigate(); // Hook to navigate programmatically
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Show loader when request starts
+    setLoading(true);
     try {
-      const response = await axios.post("http://3.111.163.2:8000/api/admin/login", { email, password });
+      const response = await axios.post("http://localhost:8000/admin/login", { email, password });
       if (response.status === 200) {
         const { token } = response.data;
         localStorage.setItem('token', token);
@@ -52,11 +49,8 @@ const AdminLogin = () => {
       }
       console.error('Admin Login Error:', error);
     } finally {
-      setLoading(false); // Hide loader when request is complete
+      setLoading(false); 
     }
-
-    
-
   };
   
 
@@ -68,7 +62,6 @@ const AdminLogin = () => {
             <CCardGroup>
               <CCard className="p-4 bg-dark-gray">
                 <CCardBody className="text-center">
-                  {/* Insert image in the center */}
                   <div className="mb-4">
                     <img src={logoImage} alt="Logo" style={{ maxWidth: '45%', height: 'auto' }} />
                   </div>
@@ -108,18 +101,11 @@ const AdminLogin = () => {
                           type="submit"
                           style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', color: 'white' }}
                           className="px-4"
-                          disabled={loading} // Disable button while loading
+                          disabled={loading} 
                         >
-                          {loading ? <CSpinner size="sm" /> : 'Login'} {/* Show loader in button */}
+                          {loading ? <CSpinner size="sm" /> : 'Login'} 
                         </CButton>
                       </CCol>
-                      {/* <CCol className="text-right">
-                        <Link to="/forgot-password">
-                          <CButton color="link" className="px-0">
-                            Forgot password?
-                          </CButton>
-                        </Link>
-                      </CCol> */}
                     </CCol>
                   </CForm>
                 </CCardBody>

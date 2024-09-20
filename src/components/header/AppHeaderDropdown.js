@@ -15,7 +15,7 @@ import axios from 'axios';
 
 import avatar8 from './../../../public/logo.png';
 
-const API_URL = 'http://3.111.163.2:3002/';
+const API_URL = 'http://localhost:3002/';
 
 const AppHeaderDropdown = () => {
   const navigate = useNavigate();
