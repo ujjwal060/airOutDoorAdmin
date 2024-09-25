@@ -2,6 +2,8 @@ import React from 'react'
 import CIcon from '@coreui/icons-react'
 import {
   cilCheck,
+  cilFeaturedPlaylist,
+  cilOpentype,
   cilSpeedometer,
   cilUser,
 } from '@coreui/icons'
@@ -25,6 +27,12 @@ const _nav = [
     name: 'Manage Vendors',
     to: '/manage-vendors',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Categories',
+    to: '/category-vendors',
+    icon: <CIcon icon={cilFeaturedPlaylist} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,

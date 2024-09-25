@@ -14,6 +14,7 @@ const Broadcast=React.lazy(()=>import('./views/support/brodcast'))
 const feedback=React.lazy(()=>import('./views/support/feedback'))
 const property=React.lazy(()=>import('./views/Property/property'))
 const bookings=React.lazy(()=>import('./views/BookingsManage/bookings'))
+const categories=React.lazy(()=>import('./views/categories/categories'))
 
 
 
@@ -33,6 +34,8 @@ const routes = [
   { path: '/feedback', name: 'Feedback', element: feedback },
   { path: '/property', name: 'Property', element: property },
   { path: '/booking', name: 'Bookings', element: bookings },
+  { path: '/category-vendors', name: 'Categories', element: categories },
+
 
 ]
 
