@@ -1,254 +1,208 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  CCard,
-  CCardHeader,
-  CCardBody,
-  CButton,
-  CForm,
-  CFormInput,
   CTable,
   CTableHead,
   CTableRow,
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CAlert,
+  CButton,
+  CPagination,
+  CPaginationItem,
   CModal,
   CModalHeader,
   CModalTitle,
-  CModalFooter,
   CModalBody,
-  CListGroup,
-  CListGroupItem,
-  CFormSelect,
+  CModalFooter,
 } from "@coreui/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faEye, faEdit, faCheck, faBan } from "@fortawesome/free-solid-svg-icons";
-import { FaTimes } from 'react-icons/fa';
+import axios from "axios";
 
-// Static data for users
-const staticUsers = [
-  { _id: "1", name: "John Doe", email: "john.doe@example.com", contactNumber: "123-456-7890", role: "guest", isActive: true },
-  { _id: "2", name: "Jane Smith", email: "jane.smith@example.com", contactNumber: "987-654-3210", role: "vendor", isActive: false },
-  // Add more static users here
-];
+const PropertyManagement = () => {
+  const [users, setUsers] = useState([]);
+  const [searchUser, setSearchUser] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [selectedUser, setSelectedUser] = useState(null); // State for selected user
+  const [showModal, setShowModal] = useState(false); // State for modal visibility
+  const LIMIT = 10;
 
-const UserManagement = () => {
-  const [visible, setVisible] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [users, setUsers] = useState(staticUsers);
-  const [error, setError] = useState(null);
-  const [searchUser, setSearchUser] = useState('');
-  const [editMode, setEditMode] = useState(false);
-  const searchUserRef = useRef(searchUser);
-
-  const handleDelete = (id) => {
-    setUsers(users.filter((user) => user._id !== id));
+  const fetchUsers = async (page = 1, search = "") => {
+    try {
+      const response = await axios.post("http://localhost:8000/admin/alluser", {
+        search: search,
+        page: page,
+        limit: LIMIT,
+      });
+      const result = await response.data;
+      setUsers(result.users);
+      setTotalPages(result.totalPages);
+      setCurrentPage(result.currentPage);
+      setTotalUsers(result.totalUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
   };
 
-  const handleSearchUser = (e) => {
-    const value = e.target.value;
-    setSearchUser(value);
-    searchUserRef.current = value;
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-    // Filter static data based on search input
-    const filteredUsers = staticUsers.filter(user =>
-      user.name.toLowerCase().includes(value.toLowerCase())
-    );
-    setUsers(filteredUsers);
+  const handleSearchUser = (e) => {
+    setSearchUser(e.target.value);
+    fetchUsers(1, e.target.value);
   };
 
   const handleClear = () => {
-    setSearchUser('');
-    setUsers(staticUsers);
+    setSearchUser("");
+    fetchUsers(1, "");
   };
 
-  const handleApprove = (id) => {
-    setUsers(users.map(user =>
-      user._id === id ? { ...user, isActive: true } : user
-    ));
+  const handleViewUser = (user) => {
+    setSelectedUser(user); // Set the selected user data
+    setShowModal(true); // Show the modal
   };
 
-  const handleDeactivate = (id) => {
-    setUsers(users.map(user =>
-      user._id === id ? { ...user, isActive: false } : user
-    ));
+  const handleCloseModal = () => {
+    setShowModal(false); // Close the modal
   };
 
-  const handleEdit = () => {
-    // Placeholder for actual edit logic
-    setEditMode(true);
-  };
-
-  const handleSave = () => {
-    // Placeholder for save logic
-    setEditMode(false);
-  };
-
-  const handleCancel = () => {
-    setEditMode(false);
-  };
-
-  const handlePasswordReset = (email) => {
-    alert(`Password reset link sent to ${email}`);
-  };
+  const startIndex = (currentPage - 1) * LIMIT + 1;
+  const endIndex = Math.min(currentPage * LIMIT, totalUsers);
 
   return (
     <>
-      {error && <CAlert color="danger">{error}</CAlert>}
-      <CCard>
-        <CCardHeader className="d-flex justify-content-between align-items-center">
-          <h3>Manage Users</h3>
-          <CForm className="d-flex align-items-center" style={{ width: '12rem', marginLeft: 'auto' }}>
-            <div style={{ position: 'relative', width: '100%' }}>
-              <CFormInput
-                type="text"
-                placeholder="Search by Name"
-                value={searchUser}
-                onChange={handleSearchUser}
-              />
-              {searchUser && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    right: '0.5rem',
-                    transform: 'translateY(-50%)',
-                    cursor: 'pointer'
-                  }}
-                  onClick={handleClear}
-                >
-                  <FaTimes size={16} />
-                </div>
-              )}
-            </div>
-          </CForm>
-        </CCardHeader>
+      <div className="search-container">
+        <input
+          type="text"
+          value={searchUser}
+          onChange={handleSearchUser}
+          placeholder="Search by Name"
+        />
+        {searchUser && <button onClick={handleClear}>Clear</button>}
+      </div>
 
-        <CCardBody>
-          <CTable responsive striped hover bordered>
-            <CTableHead color="dark">
-              <CTableRow>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>S.No</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Name</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Email</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Contact Number</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Role</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Status</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Action</CTableHeaderCell>
+      <CTable responsive striped hover bordered>
+        <CTableHead>
+          <CTableRow>
+            <CTableHeaderCell>S.No</CTableHeaderCell>
+            <CTableHeaderCell>Full Name</CTableHeaderCell>
+            <CTableHeaderCell>Email</CTableHeaderCell>
+            <CTableHeaderCell>Username</CTableHeaderCell>
+            <CTableHeaderCell>Mobile Number</CTableHeaderCell>
+            <CTableHeaderCell>View</CTableHeaderCell>
+          </CTableRow>
+        </CTableHead>
+        <CTableBody>
+          {users.length === 0 ? (
+            <CTableRow>
+              <CTableDataCell colSpan="6" className="text-center">
+                No data
+              </CTableDataCell>
+            </CTableRow>
+          ) : (
+            users.map((user, index) => (
+              <CTableRow key={user._id}>
+                <CTableDataCell>{startIndex + index}</CTableDataCell>
+                <CTableDataCell>{user.fullName}</CTableDataCell>
+                <CTableDataCell>{user.email}</CTableDataCell>
+                <CTableDataCell>{user.username}</CTableDataCell>
+                <CTableDataCell>{user.mobileNumber}</CTableDataCell>
+                <CTableDataCell>
+                  <CButton
+                    color="primary"
+                    onClick={() => handleViewUser(user)}
+                  >
+                    View
+                  </CButton>
+                </CTableDataCell>
               </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {users.map((user, index) => (
-                <CTableRow key={user._id}>
-                  <CTableHeaderCell scope="row" style={{ textAlign: "center" }}>{index + 1}</CTableHeaderCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {user.name || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {user.email || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {user.contactNumber || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {user.role || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {user.isActive ? 'Active' : 'Inactive'}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    <CButton size="sm" onClick={() => { setSelectedUser(user); setVisible(true); }}>
-                      <FontAwesomeIcon icon={faEye} style={{ color: "grey", cursor: 'pointer', marginRight: '5px' }} />
-                    </CButton>
-                    <CButton size="sm" onClick={() => handleEdit(user._id)}>
-                      <FontAwesomeIcon icon={faEdit} style={{ color: "blue", cursor: 'pointer', marginRight: '5px' }} />
-                    </CButton>
-                    {user.isActive ? (
-                      <CButton size="sm" onClick={() => handleDeactivate(user._id)}>
-                        <FontAwesomeIcon icon={faBan} style={{ color: "#fd2b2b" }} />
-                      </CButton>
-                    ) : (
-                      <CButton size="sm" onClick={() => handleApprove(user._id)}>
-                        <FontAwesomeIcon icon={faCheck} style={{ color: "green" }} />
-                      </CButton>
-                    )}
-                    <CButton size="sm" onClick={() => handleDelete(user._id)}>
-                      <FontAwesomeIcon icon={faTrash} style={{ color: "#fd2b2b" }} />
-                    </CButton>
-                  </CTableDataCell>
-                </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
-        </CCardBody>
-      </CCard>
+            ))
+          )}
+        </CTableBody>
+      </CTable>
 
-      <CModal visible={visible} onClose={() => setVisible(false)}>
-        <CModalHeader onClose={() => setVisible(false)} closeButton>
-          <CModalTitle>User Details</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          <CListGroup>
-            <CListGroupItem><strong>Name: </strong> {selectedUser?.name}</CListGroupItem>
-            <CListGroupItem><strong>Email: </strong> {selectedUser?.email}</CListGroupItem>
-            <CListGroupItem><strong>Contact Number: </strong> {selectedUser?.contactNumber}</CListGroupItem>
-            <CListGroupItem>
-              <strong>Role: </strong> {selectedUser?.role}
-            </CListGroupItem>
-            <CListGroupItem>
-              <strong>Status: </strong> {selectedUser?.isActive ? 'Active' : 'Inactive'}
-            </CListGroupItem>
-          </CListGroup>
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setVisible(false)}>
-            Close
-          </CButton>
-        </CModalFooter>
-      </CModal>
-
-      {/* Edit Modal */}
-      <CModal visible={editMode} onClose={() => setEditMode(false)}>
-        <CModalHeader onClose={() => setEditMode(false)} closeButton>
-          <CModalTitle>Edit User</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          {/* Placeholder form for editing */}
-          <CForm>
-            <CFormInput
-              label="Name"
-              defaultValue={selectedUser?.name}
-            />
-            <CFormInput
-              label="Email"
-              defaultValue={selectedUser?.email}
-            />
-            <CFormInput
-              label="Contact Number"
-              defaultValue={selectedUser?.contactNumber}
-            />
-            <CFormSelect
-              label="Role"
-              defaultValue={selectedUser?.role}
+      <div className="pagination">
+        <div className="total-users">Total Users: {totalUsers}</div>
+        <div className="pagination-controls">
+          <CPagination aria-label="Page navigation example">
+            <CPaginationItem
+              onClick={() => fetchUsers(currentPage - 1, searchUser)}
+              disabled={currentPage === 1}
             >
-              <option value="guest">Guest</option>
-              <option value="vendor">Vendor</option>
-              {/* Add other roles if necessary */}
-            </CFormSelect>
-          </CForm>
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={handleCancel}>
-            Cancel
-          </CButton>
-          <CButton color="primary" onClick={handleSave}>
-            Save Changes
-          </CButton>
-        </CModalFooter>
-      </CModal>
+              &lt;
+            </CPaginationItem>
+            <div className="pagination-info">
+              {startIndex}-{endIndex}
+            </div>
+            <CPaginationItem
+              onClick={() => fetchUsers(currentPage + 1, searchUser)}
+              disabled={currentPage === totalPages}
+            >
+              &gt;
+            </CPaginationItem>
+          </CPagination>
+        </div>
+      </div>
+
+      {/* Modal for showing user details */}
+      {selectedUser && (
+        <CModal visible={showModal} onClose={handleCloseModal}>
+          <CModalHeader>
+            <CModalTitle>User Details</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <p><strong>Full Name:</strong> {selectedUser.fullName}</p>
+            <p><strong>Email:</strong> {selectedUser.email}</p>
+            <p><strong>Username:</strong> {selectedUser.username}</p>
+            <p><strong>Mobile Number:</strong> {selectedUser.mobileNumber}</p>
+            <p><strong>User Type:</strong> {selectedUser.userType}</p>
+            <p><strong>Terms Accepted:</strong> {selectedUser.termsAccepted ? "Yes" : "No"}</p>
+            <p><strong>SMS Consent:</strong> {selectedUser.smsConsent ? "Yes" : "No"}</p>
+            <p><strong>Verified:</strong> {selectedUser.isVerified ? "Yes" : "No"}</p>
+            <p><strong>Created At:</strong> {new Date(selectedUser.createdAt).toLocaleString()}</p>
+            <p><strong>Updated At:</strong> {new Date(selectedUser.updatedAt).toLocaleString()}</p>
+          </CModalBody>
+          <CModalFooter>
+            <CButton color="secondary" onClick={handleCloseModal}>
+              Close
+            </CButton>
+          </CModalFooter>
+        </CModal>
+      )}
+
+      <style jsx>{`
+        .search-container {
+          display: flex;
+          justify-content: flex-end;
+          margin-bottom: 20px;
+        }
+
+        .pagination {
+          margin-top: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 10px;
+        }
+
+        .pagination-info {
+          margin-right: 10px;
+        }
+
+        .pagination-controls {
+          display: flex;
+          align-items: center;
+        }
+
+        .total-users {
+          display: flex;
+          justify-content: flex-end;
+          margin-right: 20px;
+        }
+      `}</style>
     </>
   );
 };
 
-export default UserManagement;
+export default PropertyManagement;
