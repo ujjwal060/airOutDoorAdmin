@@ -47,7 +47,7 @@ const AnimalManagement = () => {
 
   const fetchAnimals = async (page, search) => {
     try {
-      const response = await axios.post('http://localhost:8000/catogries/get', {
+      const response = await axios.post('http://44.196.192.232:8000/catogries/get', {
         page,
         limit: itemsPerPage,
         search
@@ -77,7 +77,7 @@ const AnimalManagement = () => {
     formData.append('image', imageFile);
 
     try {
-      const response = await axios.post('http://localhost:8000/catogries/add', formData, {
+      const response = await axios.post('http://44.196.192.232:8000/catogries/add', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -107,7 +107,7 @@ const AnimalManagement = () => {
     }
 
     try {
-      const response = await axios.delete(`http://localhost:8000/catogries/delete/${id}`);
+      const response = await axios.delete(`http://44.196.192.232:8000/catogries/delete/${id}`);
       if (response.status === 200) {
         fetchAnimals(currentPage, searchName); // Re-fetch animals after deletion
       }

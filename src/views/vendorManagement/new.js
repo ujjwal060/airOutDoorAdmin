@@ -44,7 +44,7 @@ const OrderDetails = () => {
 
   const fetchOrderDetails = async () => {
     try {
-      const response = await axios.get('http://localhost:3002/api/OrderDetails/');
+      const response = await axios.get('http://44.196.192.232:3002/api/OrderDetails/');
       setOrderDetails(response.data);
       setLoading(false);
     } catch (error) {
@@ -74,7 +74,7 @@ const OrderDetails = () => {
 
   const handleUpdateStatus = async () => {
     try {
-      const response = await axios.put(`http://localhost:3002/api/OrderDetails/${selectedOrder._id}`, { status: newStatus });
+      const response = await axios.put(`http://44.196.192.232:3002/api/OrderDetails/${selectedOrder._id}`, { status: newStatus });
       setSelectedOrder({ ...selectedOrder, status: newStatus });
       setOrderDetails((prevDetails) =>
         prevDetails.map((order) =>

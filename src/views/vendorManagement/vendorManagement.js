@@ -25,7 +25,7 @@ const VendorManagement = () => {
 
   const fetchUsers = async (page = 1, search = "") => {
     try {
-      const response = await axios.post("http://localhost:8000/admin/getVendor", {
+      const response = await axios.post("http://44.196.192.232:8000/admin/getVendor", {
         search: search,
         page: page,
         limit: LIMIT,
@@ -57,7 +57,7 @@ const VendorManagement = () => {
 
   const handleApprove = async (id) => {
     try {
-      await axios.post("http://localhost:8000/admin/verify", {
+      await axios.post("http://44.196.192.232:8000/admin/verify", {
         vendorId: id,
         status: "approved",
       });
@@ -71,7 +71,7 @@ const VendorManagement = () => {
     try {
       console.log(id);
       
-      await axios.post("http://localhost:8000/admin/verify", {
+      await axios.post("http://44.196.192.232:8000/admin/verify", {
         vendorId: id,
         status: "rejected",
       });

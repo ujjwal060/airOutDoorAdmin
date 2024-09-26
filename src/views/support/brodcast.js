@@ -43,7 +43,7 @@ const Broadcast = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:3002/api/admin/sendN', {
+      const response = await fetch('http://44.196.192.232:3002/api/admin/sendN', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
