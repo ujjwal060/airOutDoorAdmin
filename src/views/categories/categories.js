@@ -163,7 +163,7 @@ const AnimalManagement = () => {
                     <CTableRow key={animal._id || index}>
                       <CTableHeaderCell scope="row">{(currentPage - 1) * itemsPerPage + index + 1}</CTableHeaderCell>
                       <CTableDataCell>
-                        <img src={`http://localhost:8000/${animal.image}`} alt={animal.name} width="50" />
+                        <img src={animal.image} alt={animal.name} width="50" />
                       </CTableDataCell>
                       <CTableDataCell>{animal.name}</CTableDataCell>
                       <CTableDataCell>{animal.parentCategory}</CTableDataCell>

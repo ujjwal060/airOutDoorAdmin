@@ -20,6 +20,7 @@ const VendorManagement = () => {
   const [searchUser, setSearchUser] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
   const LIMIT = 10;
 
   const fetchUsers = async (page = 1, search = "") => {

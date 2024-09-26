@@ -1,228 +1,168 @@
-import React, { useState,useRef  } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  CCard,
-  CCardHeader,
-  CCardBody,
-  CButton,
-  CForm,
-  CFormInput,
   CTable,
   CTableHead,
   CTableRow,
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CAlert,
-  CModal,
-  CModalHeader,
-  CModalTitle,
-  CModalFooter,
-  CModalBody,
-  CListGroup,
-  CListGroupItem,
-  CFormSelect,
+  CButton,
+  CPagination,
+  CPaginationItem,
 } from "@coreui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faEdit, faCheck, faBan } from "@fortawesome/free-solid-svg-icons";
-import { FaTimes } from 'react-icons/fa';
-
-// Static data for properties
-const staticProperties = [
-  { _id: "1", name: "Property A", location: "Location A", price: "$1000", status: "pending" },
-  { _id: "2", name: "Property B", location: "Location B", price: "$1500", status: "pending" },
-  // Add more static properties here
-];
+import { faCheck, faBan } from "@fortawesome/free-solid-svg-icons";
+import { FaTimes } from "react-icons/fa";
+import axios from "axios";
 
 const PropertyManagement = () => {
-  const [visible, setVisible] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState(null);
-  const [properties, setProperties] = useState(staticProperties);
-  const [error, setError] = useState(null);
-  const [searchProperty, setSearchProperty] = useState('');
-  const searchPropertyRef = useRef(searchProperty);
+  const [properties, setProperties] = useState([]);
+  const [searchProperty, setSearchProperty] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalProperties, setTotalProperties] = useState(0);
+  const LIMIT = 10;
 
-  const handleDelete = (id) => {
-    setProperties(properties.filter((property) => property._id !== id));
+  const fetchProperties = async (page = 1, search = "") => {
+    try {
+      const response = await axios.post("http://localhost:8000/admin/allProoerty", {
+        search: search,
+        page: page,
+        limit: LIMIT,
+      });
+      const result = await response.data;
+      setProperties(result.data);
+      setTotalPages(result.totalPages);
+      setCurrentPage(result.currentPage);
+      setTotalProperties(result.total);
+    } catch (error) {
+      console.error("Error fetching properties:", error);
+    }
   };
 
-  const handleSearchProperty = (e) => {
-    const value = e.target.value;
-    setSearchProperty(value);
-    searchPropertyRef.current = value;
+  useEffect(() => {
+    fetchProperties();
+  }, []);
 
-    // Filter static data based on search input
-    const filteredProperties = staticProperties.filter(property =>
-      property.name.toLowerCase().includes(value.toLowerCase())
-    );
-    setProperties(filteredProperties);
+  const handleSearchProperty = (e) => {
+    setSearchProperty(e.target.value);
+    fetchProperties(1, e.target.value);
   };
 
   const handleClear = () => {
-    setSearchProperty('');
-    setProperties(staticProperties);
+    setSearchProperty("");
+    fetchProperties(1, "");
   };
 
-  const handleApprove = (id) => {
-    setProperties(properties.map(property =>
-      property._id === id ? { ...property, status: "approved" } : property
-    ));
-  };
-
-  const handleReject = (id) => {
-    setProperties(properties.map(property =>
-      property._id === id ? { ...property, status: "rejected" } : property
-    ));
-  };
-
-  const handleEdit = () => {
-    // Placeholder for actual edit logic
-    setVisible(true);
-  };
-
-  const handleSave = () => {
-    // Placeholder for save logic
-    setVisible(false);
-  };
-
-  const handleCancel = () => {
-    setVisible(false);
-  };
+  const startIndex = (currentPage - 1) * LIMIT + 1;
+  const endIndex = Math.min(currentPage * LIMIT, totalProperties);
 
   return (
     <>
-      {error && <CAlert color="danger">{error}</CAlert>}
-      <CCard>
-        <CCardHeader className="d-flex justify-content-between align-items-center">
-          <h3>Property Management</h3>
-          <CForm className="d-flex align-items-center" style={{ width: '12rem', marginLeft: 'auto' }}>
-            <div style={{ position: 'relative', width: '100%' }}>
-              <CFormInput
-                type="text"
-                placeholder="Search by Name"
-                value={searchProperty}
-                onChange={handleSearchProperty}
-              />
-              {searchProperty && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    right: '0.5rem',
-                    transform: 'translateY(-50%)',
-                    cursor: 'pointer'
-                  }}
-                  onClick={handleClear}
-                >
-                  <FaTimes size={16} />
-                </div>
-              )}
-            </div>
-          </CForm>
-        </CCardHeader>
+      <div className="search-container">
+        <input
+          type="text"
+          value={searchProperty}
+          onChange={handleSearchProperty}
+          placeholder="Search by Name"
+        />
+        {searchProperty && <FaTimes onClick={handleClear} />}
+      </div>
 
-        <CCardBody>
-          <CTable responsive striped hover bordered>
-            <CTableHead color="dark">
-              <CTableRow>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>S.No</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Name</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Location</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Price</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Status</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Action</CTableHeaderCell>
+      <CTable responsive striped hover bordered>
+        <CTableHead>
+          <CTableRow>
+            <CTableHeaderCell>S.No</CTableHeaderCell>
+            <CTableHeaderCell>Image</CTableHeaderCell> {/* New Image Column */}
+            <CTableHeaderCell>Name</CTableHeaderCell>
+            <CTableHeaderCell>Description</CTableHeaderCell>
+            <CTableHeaderCell>Amenities</CTableHeaderCell>
+            <CTableHeaderCell>Pricing</CTableHeaderCell>
+            <CTableHeaderCell>Availability</CTableHeaderCell>
+          </CTableRow>
+        </CTableHead>
+        <CTableBody>
+          {properties.length === 0 ? (
+            <CTableRow>
+              <CTableDataCell colSpan="8" className="text-center">
+                No data
+              </CTableDataCell>
+            </CTableRow>
+          ) : (
+            properties.map((property, index) => (
+              <CTableRow key={property._id}>
+                <CTableDataCell>{startIndex + index}</CTableDataCell>
+                <CTableDataCell>
+                  <img
+                    src={property.imageUrl} 
+                    alt={property.name}
+                    style={{ width: "100px", height: "auto" }}
+                  />
+                </CTableDataCell>
+                <CTableDataCell>{property.name}</CTableDataCell>
+                <CTableDataCell>{property.description}</CTableDataCell>
+                <CTableDataCell>{property.amenities}</CTableDataCell>
+                <CTableDataCell>{property.pricing}</CTableDataCell>
+                <CTableDataCell>{property.availability}</CTableDataCell>
               </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {properties.map((property, index) => (
-                <CTableRow key={property._id}>
-                  <CTableHeaderCell scope="row" style={{ textAlign: "center" }}>{index + 1}</CTableHeaderCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {property.name || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {property.location || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {property.price || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {property.status || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {property.status === "pending" && (
-                      <>
-                        <CButton size="sm" onClick={() => handleApprove(property._id)}>
-                          <FontAwesomeIcon icon={faCheck} style={{ color: "green" }} />
-                        </CButton>
-                        <CButton size="sm" onClick={() => handleReject(property._id)}>
-                          <FontAwesomeIcon icon={faBan} style={{ color: "#fd2b2b" }} />
-                        </CButton>
-                      </>
-                    )}
-                    {property.status === "approved" && (
-                      <CButton size="sm" disabled>
-                        <FontAwesomeIcon icon={faCheck} style={{ color: "green" }} />
-                      </CButton>
-                    )}
-                    {property.status === "rejected" && (
-                      <CButton size="sm" disabled>
-                        <FontAwesomeIcon icon={faBan} style={{ color: "#fd2b2b" }} />
-                      </CButton>
-                    )}
-                    <CButton size="sm" onClick={() => { setSelectedProperty(property); handleEdit(); }}>
-                      <FontAwesomeIcon icon={faEdit} />
-                    </CButton>
-                    <CButton size="sm" onClick={() => handleDelete(property._id)}>
-                      <FontAwesomeIcon icon={faTrash} style={{ color: "#fd2b2b" }} />
-                    </CButton>
-                  </CTableDataCell>
-                </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
-        </CCardBody>
-      </CCard>
+            ))
+          )}
+        </CTableBody>
+      </CTable>
 
-      {/* Edit Modal */}
-      <CModal visible={visible} onClose={() => setVisible(false)}>
-        <CModalHeader onClose={() => setVisible(false)} closeButton>
-          <CModalTitle>Edit Property</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          {/* Placeholder form for editing */}
-          <CForm>
-            <CFormInput
-              label="Name"
-              defaultValue={selectedProperty?.name}
-            />
-            <CFormInput
-              label="Location"
-              defaultValue={selectedProperty?.location}
-            />
-            <CFormInput
-              label="Price"
-              defaultValue={selectedProperty?.price}
-            />
-            <CFormSelect
-              label="Status"
-              defaultValue={selectedProperty?.status}
+      <div className="pagination">
+        <div className="total-properties">Total : {totalProperties}</div>
+        <div className="pagination-controls">
+          <CPagination aria-label="Page navigation example">
+            <CPaginationItem
+              onClick={() => fetchProperties(currentPage - 1, searchProperty)}
+              disabled={currentPage === 1}
             >
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-              {/* Add other statuses if necessary */}
-            </CFormSelect>
-          </CForm>
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setVisible(false)}>
-            Cancel
-          </CButton>
-          <CButton color="primary" onClick={() => handleSave()}>
-            Save Changes
-          </CButton>
-        </CModalFooter>
-      </CModal>
+              &lt;
+            </CPaginationItem>
+            <div className="pagination-info">
+              {startIndex}-{endIndex}
+            </div>
+            <CPaginationItem
+              onClick={() => fetchProperties(currentPage + 1, searchProperty)}
+              disabled={currentPage === totalPages}
+            >
+              &gt;
+            </CPaginationItem>
+          </CPagination>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .search-container {
+          display: flex;
+          justify-content: flex-end;
+          margin-bottom: 20px;
+        }
+
+        .pagination {
+          margin-top: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 10px;
+        }
+
+        .pagination-info {
+          margin-right: 10px;
+        }
+
+        .pagination-controls {
+          display: flex;
+          align-items: center;
+        }
+
+        .total-properties {
+          display: flex;
+          justify-content: flex-end;
+          margin-right: 20px;
+        }
+      `}</style>
     </>
   );
 };
