@@ -94,7 +94,7 @@ const PropertyManagement = () => {
                 <CTableDataCell>{startIndex + index}</CTableDataCell>
                 <CTableDataCell>
                   <img
-                    src={property.imageUrl} 
+                    src={property.imageUrl[0]} 
                     alt={property.name}
                     style={{ width: "100px", height: "auto" }}
                   />
