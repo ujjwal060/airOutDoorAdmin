@@ -31,7 +31,7 @@ const Tables = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const bookingsResponse = await axios.get(`http://localhost:8000/booking/getBooking`);
+        const bookingsResponse = await axios.get(`http://44.196.192.232:8000/booking/getBooking`);
         setBookings(bookingsResponse.data || []);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -47,7 +47,7 @@ const Tables = () => {
   // Delete a booking by ID
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:8000/booking/delete/${id}`);
+      await axios.delete(`http://44.196.192.232:8000/booking/delete/${id}`);
       setBookings(Bookings.filter((booking) => booking._id !== id));
     } catch (error) {
       console.error('Error deleting booking:', error);
