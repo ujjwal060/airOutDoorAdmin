@@ -1,213 +1,158 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   CCard,
-  CCardHeader,
   CCardBody,
-  CButton,
-  CForm,
-  CFormInput,
+  CCardHeader,
+  CCol,
+  CRow,
   CTable,
   CTableHead,
+  CTableBody,
   CTableRow,
   CTableHeaderCell,
-  CTableBody,
   CTableDataCell,
-  CAlert,
-  CModal,
-  CModalHeader,
-  CModalTitle,
-  CModalFooter,
-  CModalBody,
-  CListGroup,
-  CListGroupItem,
-} from "@coreui/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faEdit, faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FaTimes as FaTimesIcon } from 'react-icons/fa';
+  CSpinner,
+  CPagination,
+  CPaginationItem,
+} from '@coreui/react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
 
-// Static data for bookings
-const staticBookings = [
-  { _id: "1", user: "User A", property: "Property A", date: "2024-09-12", status: "pending" },
-  { _id: "2", user: "User B", property: "Property B", date: "2024-09-13", status: "confirmed" },
-  // Add more static bookings here
-];
+const Tables = () => {
+  const [Bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage] = useState(10);
+  const vendorId=localStorage.getItem("vendorId");
 
-const BookingManagement = () => {
-  const [visible, setVisible] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState(null);
-  const [bookings, setBookings] = useState(staticBookings);
-  const [error, setError] = useState(null);
-  const [searchBooking, setSearchBooking] = useState('');
-  const searchBookingRef = useRef(searchBooking);
+  // Fetch bookings from the API on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const bookingsResponse = await axios.get(`http://localhost:8000/booking/getBooking`);
+        setBookings(bookingsResponse.data || []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError('Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleDelete = (id) => {
-    setBookings(bookings.filter((booking) => booking._id !== id));
+    fetchData();
+  }, []);
+
+  // Delete a booking by ID
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8000/booking/delete/${id}`);
+      setBookings(Bookings.filter((booking) => booking._id !== id));
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      setError('Failed to delete booking');
+    }
   };
 
-  const handleSearchBooking = (e) => {
-    const value = e.target.value;
-    setSearchBooking(value);
-    searchBookingRef.current = value;
+  // Calculate current bookings for pagination
+  const indexOfLastBooking = currentPage * rowsPerPage;
+  const indexOfFirstBooking = indexOfLastBooking - rowsPerPage;
+  const currentBookings = Bookings.slice(indexOfFirstBooking, indexOfLastBooking);
 
-    // Filter static data based on search input
-    const filteredBookings = staticBookings.filter(booking =>
-      booking.user.toLowerCase().includes(value.toLowerCase()) ||
-      booking.property.toLowerCase().includes(value.toLowerCase())
-    );
-    setBookings(filteredBookings);
-  };
-
-  const handleClear = () => {
-    setSearchBooking('');
-    setBookings(staticBookings);
-  };
-
-  const handleApprove = (id) => {
-    setBookings(bookings.map(booking =>
-      booking._id === id ? { ...booking, status: "confirmed" } : booking
-    ));
-  };
-
-  const handleCancel = (id) => {
-    setBookings(bookings.map(booking =>
-      booking._id === id ? { ...booking, status: "cancelled" } : booking
-    ));
-  };
-
-  const handleDispute = () => {
-    // Placeholder for actual dispute handling logic
-    setVisible(true);
-  };
-
-  const handleSave = () => {
-    // Placeholder for save logic
-    setVisible(false);
-  };
-
-  const handleCancelModal = () => {
-    setVisible(false);
-  };
+  // Pagination logic
+  const totalPages = Math.ceil(Bookings.length / rowsPerPage);
+  
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <>
-      {error && <CAlert color="danger">{error}</CAlert>}
-      <CCard>
-        <CCardHeader className="d-flex justify-content-between align-items-center">
-          <h3>Booking Management</h3>
-          <CForm className="d-flex align-items-center" style={{ width: '12rem', marginLeft: 'auto' }}>
-            <div style={{ position: 'relative', width: '100%' }}>
-              <CFormInput
-                type="text"
-                placeholder="Search by User/Property"
-                value={searchBooking}
-                onChange={handleSearchBooking}
-              />
-              {searchBooking && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    right: '0.5rem',
-                    transform: 'translateY(-50%)',
-                    cursor: 'pointer'
-                  }}
-                  onClick={handleClear}
-                >
-                  <FaTimesIcon size={16} />
-                </div>
-              )}
-            </div>
-          </CForm>
-        </CCardHeader>
-
-        <CCardBody>
-          <CTable responsive striped hover bordered>
-            <CTableHead color="dark">
-              <CTableRow>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>S.No</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>User</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Property</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Date</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Status</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Action</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {bookings.map((booking, index) => (
-                <CTableRow key={booking._id}>
-                  <CTableHeaderCell scope="row" style={{ textAlign: "center" }}>{index + 1}</CTableHeaderCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {booking.user || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {booking.property || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {booking.date || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {booking.status || "null"}
-                  </CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>
-                    {booking.status === "pending" && (
-                      <>
-                        <CButton size="sm" onClick={() => handleApprove(booking._id)}>
-                          <FontAwesomeIcon icon={faCheck} style={{ color: "green" }} />
-                        </CButton>
-                        <CButton size="sm" onClick={() => handleCancel(booking._id)}>
-                          <FontAwesomeIcon icon={faTimes} style={{ color: "#fd2b2b" }} />
-                        </CButton>
-                        <CButton size="sm" onClick={handleDispute}>
-                          <FontAwesomeIcon icon={faEdit} />
-                        </CButton>
-                      </>
-                    )}
-                    {booking.status === "confirmed" && (
-                      <CButton size="sm" disabled>
-                        <FontAwesomeIcon icon={faCheck} style={{ color: "green" }} />
-                      </CButton>
-                    )}
-                    {booking.status === "cancelled" && (
-                      <CButton size="sm" disabled>
-                        <FontAwesomeIcon icon={faTimes} style={{ color: "#fd2b2b" }} />
-                      </CButton>
-                    )}
-                    <CButton size="sm" onClick={() => handleDelete(booking._id)}>
-                      <FontAwesomeIcon icon={faTrash} style={{ color: "#fd2b2b" }} />
-                    </CButton>
-                  </CTableDataCell>
+    <CRow>
+      <CCol xs={12}>
+        <CCard className="mb-4">
+          <CCardHeader>
+            <strong>Bookings</strong>
+          </CCardHeader>
+          <CCardBody>
+            {loading ? (
+              <CSpinner color="primary" />
+            ) : error ? (
+              <div className="text-danger">{error}</div>
+            ) : (
+              <CTable>
+              <CTableHead color="dark">
+                <CTableRow>
+                  <CTableHeaderCell>#</CTableHeaderCell>
+                  <CTableHeaderCell>Check In</CTableHeaderCell>
+                  <CTableHeaderCell>Check Out</CTableHeaderCell>
+                  <CTableHeaderCell>Guests</CTableHeaderCell>
+                  <CTableHeaderCell>Camper</CTableHeaderCell>
+                  <CTableHeaderCell>Price</CTableHeaderCell>
+                  <CTableHeaderCell>Action</CTableHeaderCell>
                 </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
-        </CCardBody>
-      </CCard>
-
-      {/* Dispute/Modal */}
-      <CModal visible={visible} onClose={handleCancelModal}>
-        <CModalHeader onClose={handleCancelModal} closeButton>
-          <CModalTitle>Handle Dispute</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          <CListGroup>
-            <CListGroupItem><strong>User: </strong> {selectedBooking?.user}</CListGroupItem>
-            <CListGroupItem><strong>Property: </strong> {selectedBooking?.property}</CListGroupItem>
-            <CListGroupItem><strong>Date: </strong> {selectedBooking?.date}</CListGroupItem>
-            <CListGroupItem><strong>Status: </strong> {selectedBooking?.status}</CListGroupItem>
-          </CListGroup>
-          {/* Placeholder for dispute resolution */}
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={handleCancelModal}>
-            Cancel
-          </CButton>
-          <CButton color="primary" onClick={handleSave}>
-            Save Changes
-          </CButton>
-        </CModalFooter>
-      </CModal>
+              </CTableHead>
+              <CTableBody>
+                {currentBookings.length > 0 ? (
+                  currentBookings.map((Booking, index) => (
+                    <CTableRow key={Booking._id}>
+                      <CTableHeaderCell scope="row">
+                        {index + 1 + (currentPage - 1) * rowsPerPage}
+                      </CTableHeaderCell>
+                      <CTableDataCell>{new Date(Booking.checkInDate).toLocaleDateString()}</CTableDataCell>
+                      <CTableDataCell>{new Date(Booking.checkOutDate).toLocaleDateString()}</CTableDataCell>
+                      <CTableDataCell>{Booking.guests}</CTableDataCell>
+                      <CTableDataCell>{Booking.camper ? 'Yes' : 'No'}</CTableDataCell>
+                      <CTableDataCell>{Booking.totalAmount}</CTableDataCell>
+                      <CTableDataCell>
+                        <FontAwesomeIcon
+                          icon={faTrash}
+                          onClick={() => handleDelete(Booking._id)}
+                          style={{ cursor: 'pointer', color: 'red' }}
+                        />
+                      </CTableDataCell>
+                    </CTableRow>
+                  ))
+                ) : (
+                  <CTableRow>
+                    <CTableDataCell colSpan={7} className="text-center">
+                      No bookings found
+                    </CTableDataCell>
+                  </CTableRow>
+                )}
+              </CTableBody>
+            </CTable>
+            )}
+          </CCardBody>
+         
+        </CCard>
+      </CCol>
+    </CRow>
+     {/* Pagination */}
+     <CPagination aria-label="Page navigation example" style={{display:"flex", justifyContent:"center"}}>
+            <CPaginationItem
+              disabled={currentPage === 1}
+              onClick={() => paginate(currentPage - 1)}
+            >
+               &laquo;
+            </CPaginationItem>
+            {Array.from({ length: totalPages }, (_, index) => (
+              <CPaginationItem
+                key={index + 1}
+                active={currentPage === index + 1}
+                onClick={() => paginate(index + 1)}
+              >
+                {index + 1} 
+              </CPaginationItem>
+            ))}
+            <CPaginationItem
+              disabled={currentPage === totalPages}
+              onClick={() => paginate(currentPage + 1)}
+            >
+               &raquo;
+            </CPaginationItem>
+          </CPagination>
     </>
   );
 };
 
-export default BookingManagement;
+export default Tables;
