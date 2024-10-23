@@ -161,7 +161,7 @@ const AnimalManagement = () => {
                 <CTable>
                   <CTableHead color="dark">
                     <CTableRow>
-                      <CTableHeaderCell>#</CTableHeaderCell>
+                      <CTableHeaderCell>S.No</CTableHeaderCell>
                       <CTableHeaderCell>Image</CTableHeaderCell>
                       <CTableHeaderCell>Animal Name</CTableHeaderCell>
                       <CTableHeaderCell>Actions</CTableHeaderCell>
