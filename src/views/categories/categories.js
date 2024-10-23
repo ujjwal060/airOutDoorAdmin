@@ -18,13 +18,15 @@ import {
   CModalFooter,
   CForm,
   CFormInput,
-  CFormSelect,
+  CSpinner,
   CPagination,
   CPaginationItem,
 } from '@coreui/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons'; // Removed faEye import
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AnimalManagement = () => {
   const [animals, setAnimals] = useState([]);
@@ -34,11 +36,13 @@ const AnimalManagement = () => {
   const [searchName, setSearchName] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [totalItems, setTotalItems] = useState(0); // Total items count from the server
+  const [totalItems, setTotalItems] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchAnimals(currentPage, searchName);
-  }, [currentPage, searchName]); // Fetch data whenever currentPage or searchName changes
+  }, [currentPage, searchName]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -46,21 +50,21 @@ const AnimalManagement = () => {
   };
 
   const fetchAnimals = async (page, search) => {
+    setIsLoading(true);
     try {
       const response = await axios.post('http://44.196.192.232:8000/catogries/get', {
         page,
         limit: itemsPerPage,
-        search
+        search,
       });
-      console.log('API Response:', response.data);
       if (Array.isArray(response.data.data)) {
         setAnimals(response.data.data);
-        setTotalItems(response.data.total); // Set total items count
-      } else {
-        console.error('Expected response.data to be an array', response.data);
+        setTotalItems(response.data.total);
       }
     } catch (error) {
-      console.error('Error fetching animals:', error);
+      toast.error('Error fetching animals');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,10 +75,16 @@ const AnimalManagement = () => {
   };
 
   const addAnimal = async () => {
+    if (!newAnimal.name || !imageFile) {
+      toast.error('Please fill all fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+
     const formData = new FormData();
     formData.append('name', newAnimal.name);
-    formData.append('parentCategory', newAnimal.category);
-    formData.append('image', imageFile);
+    formData.append('images', imageFile);
 
     try {
       const response = await axios.post('http://44.196.192.232:8000/catogries/add', formData, {
@@ -83,51 +93,49 @@ const AnimalManagement = () => {
         },
       });
 
-      console.log("Response:", response.data); // Log the full response
-
-      if (response.status === 201) {
-        fetchAnimals(currentPage, searchName); // Re-fetch animals after adding a new one
+      if (response.status === 200) {
+        toast.success('Animal added successfully');
         resetForm();
+        setModalVisible(false)
+        fetchAnimals(currentPage, searchName);
       }
     } catch (error) {
-      console.error('Error adding animal:', error);
+      toast.error('Error adding animal');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const resetForm = () => {
     setModalVisible(false);
-    setNewAnimal({ name: '', category: '', image: '' });
+    setNewAnimal({ name: '', image: '' });
     setImageFile(null);
   };
 
   const deleteAnimal = async (id) => {
     if (!id) {
-      console.error('Invalid ID:', id);
+      toast.error('Invalid ID');
       return;
     }
 
     try {
       const response = await axios.delete(`http://44.196.192.232:8000/catogries/delete/${id}`);
       if (response.status === 200) {
-        fetchAnimals(currentPage, searchName); // Re-fetch animals after deletion
+        toast.success('Animal deleted successfully');
+        fetchAnimals(currentPage, searchName);
       }
     } catch (error) {
-      console.error('Error deleting animal:', error);
+      toast.error('Error deleting animal');
     }
-  };
-
-  const handleCategoryChange = (e) => {
-    const value = e.target.value;
-    setNewAnimal({ ...newAnimal, category: value });
   };
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Pagination logic
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   return (
     <>
+      <ToastContainer />
       <CRow>
         <CCol xs={12}>
           <CCard className="mb-4">
@@ -140,44 +148,48 @@ const AnimalManagement = () => {
                   className="me-5"
                   onChange={(e) => setSearchName(e.target.value)}
                 />
-                <CButton color="warning" onClick={() => setModalVisible(true)} style={{ width: "80%" }}>
+                <CButton color="warning" onClick={() => setModalVisible(true)} style={{ width: '80%' }}>
                   Add Animal
                 </CButton>
               </div>
             </CCardHeader>
 
             <CCardBody>
-              <CTable>
-                <CTableHead color="dark">
-                  <CTableRow>
-                    <CTableHeaderCell>#</CTableHeaderCell>
-                    <CTableHeaderCell>Image</CTableHeaderCell>
-                    <CTableHeaderCell>Animal Name</CTableHeaderCell>
-                    <CTableHeaderCell>Category</CTableHeaderCell>
-                    <CTableHeaderCell>Actions</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-
-                <CTableBody>
-                  {animals.map((animal, index) => (
-                    <CTableRow key={animal._id || index}>
-                      <CTableHeaderCell scope="row">{(currentPage - 1) * itemsPerPage + index + 1}</CTableHeaderCell>
-                      <CTableDataCell>
-                        <img src={animal.image} alt={animal.name} width="50" />
-                      </CTableDataCell>
-                      <CTableDataCell>{animal.name}</CTableDataCell>
-                      <CTableDataCell>{animal.parentCategory}</CTableDataCell>
-                      <CTableDataCell>
-                        <FontAwesomeIcon
-                          icon={faTrash}
-                          onClick={() => deleteAnimal(animal._id)}
-                          style={{ cursor: 'pointer', color: 'red' }}
-                        />
-                      </CTableDataCell>
+              {isLoading ? (
+                <CSpinner color="primary" />
+              ) : (
+                <CTable>
+                  <CTableHead color="dark">
+                    <CTableRow>
+                      <CTableHeaderCell>S.No</CTableHeaderCell>
+                      <CTableHeaderCell>Image</CTableHeaderCell>
+                      <CTableHeaderCell>Animal Name</CTableHeaderCell>
+                      <CTableHeaderCell>Actions</CTableHeaderCell>
                     </CTableRow>
-                  ))}
-                </CTableBody>
-              </CTable>
+                  </CTableHead>
+
+                  <CTableBody>
+                    {animals.map((animal, index) => (
+                      <CTableRow key={animal._id || index}>
+                        <CTableHeaderCell scope="row">
+                          {(currentPage - 1) * itemsPerPage + index + 1}
+                        </CTableHeaderCell>
+                        <CTableDataCell>
+                          <img src={animal.image} alt={animal.name} width="50" />
+                        </CTableDataCell>
+                        <CTableDataCell>{animal.name}</CTableDataCell>
+                        <CTableDataCell>
+                          <FontAwesomeIcon
+                            icon={faTrash}
+                            onClick={() => deleteAnimal(animal._id)}
+                            style={{ cursor: 'pointer', color: 'red' }}
+                          />
+                        </CTableDataCell>
+                      </CTableRow>
+                    ))}
+                  </CTableBody>
+                </CTable>
+              )}
             </CCardBody>
           </CCard>
         </CCol>
@@ -202,23 +214,14 @@ const AnimalManagement = () => {
                 onChange={handleImageUpload}
                 required
               />
-              <CFormSelect label="Category" onChange={handleCategoryChange}>
-                <option>Select Category</option>
-                <option value="Terrestrial Animals">Terrestrial Animals</option>
-                <option value="Aquatic Animals">Aquatic Animals</option>
-                <option value="Aerial Animals">Aerial Animals</option>
-                <option value="Adventure Activities">Adventure Activities</option>
-                <option value="Special Events">Special Events</option>
-                <option value="Other Activities">Other Activities</option>
-              </CFormSelect>
             </CForm>
           </CModalBody>
           <CModalFooter>
             <CButton color="secondary" onClick={resetForm}>
               Cancel
             </CButton>
-            <CButton color="warning" onClick={addAnimal}>
-              Add Animal
+            <CButton color="warning" onClick={addAnimal} disabled={isSubmitting}>
+              {isSubmitting ? <CSpinner size="sm" /> : 'Add Animal'}
             </CButton>
           </CModalFooter>
         </CModal>
@@ -226,15 +229,25 @@ const AnimalManagement = () => {
         {/* Pagination */}
         <CCol xs={12} className="d-flex justify-content-center">
           <CPagination>
-            <CPaginationItem onClick={() => currentPage > 1 && paginate(currentPage - 1)} disabled={currentPage === 1}>
+            <CPaginationItem
+              onClick={() => currentPage > 1 && paginate(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
               Previous
             </CPaginationItem>
             {[...Array(totalPages)].map((_, index) => (
-              <CPaginationItem key={index + 1} active={currentPage === index + 1} onClick={() => paginate(index + 1)}>
+              <CPaginationItem
+                key={index + 1}
+                active={currentPage === index + 1}
+                onClick={() => paginate(index + 1)}
+              >
                 {index + 1}
               </CPaginationItem>
             ))}
-            <CPaginationItem onClick={() => currentPage < totalPages && paginate(currentPage + 1)} disabled={currentPage === totalPages}>
+            <CPaginationItem
+              onClick={() => currentPage < totalPages && paginate(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
               Next
             </CPaginationItem>
           </CPagination>
