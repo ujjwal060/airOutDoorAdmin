@@ -100,7 +100,7 @@ const AnimalManagement = () => {
         fetchAnimals(currentPage, searchName);
       }
     } catch (error) {
-      toast.error('Error adding animal');
+      toast.error(error.response?.data?.message);
     } finally {
       setIsSubmitting(false);
     }
