@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   CCard,
   CCardHeader,
@@ -10,140 +10,157 @@ import {
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CAlert,
   CModal,
   CModalHeader,
   CModalTitle,
-  CModalFooter,
   CModalBody,
-  CListGroup,
-  CListGroupItem,
-  CForm,
-  CFormInput,
+  CModalFooter,
 } from "@coreui/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faCog, faMoneyBill } from "@fortawesome/free-solid-svg-icons";
-
-// Static data for financial reports
-const staticReports = {
-  totalRevenue: 50000,
-  vendorPayouts: [
-    { vendor: "Vendor A", amount: 2000, date: "2024-09-10" },
-    { vendor: "Vendor B", amount: 1500, date: "2024-09-11" },
-  ],
-  transactions: [
-    { transactionId: "TX12345", amount: 3000, date: "2024-09-12", status: "Completed" },
-    { transactionId: "TX12346", amount: 2000, date: "2024-09-13", status: "Pending" },
-  ],
-};
 
 const FinancialManagement = () => {
+  const [vendorsData, setVendorsData] = useState([]);
   const [visible, setVisible] = useState(false);
-  const [selectedReport, setSelectedReport] = useState(null);
-  const [error, setError] = useState(null);
+  const [selectedVendor, setSelectedVendor] = useState(null);
 
-  const handleDownloadReport = () => {
-    // Placeholder for generating and downloading reports
-    alert("Download report functionality not implemented");
+  useEffect(() => {
+    const fetchVendorsData = async () => {
+      try {
+        const response = await fetch("http://44.196.192.232:8000/payouts/getAll");
+        const data = await response.json();
+        
+
+        if (data.status === 200) {
+          setVendorsData(data.data);
+        } else {
+          console.error("Failed to fetch data:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching vendors data:", error);
+      }
+    };
+
+    fetchVendorsData();
+  }, []);
+
+  const handleViewPayouts = (vendor) => {
+    setSelectedVendor(vendor);
+    setVisible(true);
   };
 
-  const handleManageGateways = () => {
-    setVisible(true);
+  const handlePayout = (vendor) => {
+    alert(`Processing payout for ${vendor.vendorName}`);
   };
 
   const handleClose = () => {
     setVisible(false);
+    setSelectedVendor(null);
   };
 
   return (
     <>
-      {error && <CAlert color="danger">{error}</CAlert>}
       <CCard>
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <h3>Financial Management</h3>
-          <div className="d-flex">
-            <CButton color="primary" className="me-2" onClick={handleDownloadReport}>
-              <FontAwesomeIcon icon={faDownload} /> Download Reports
-            </CButton>
-            <CButton color="secondary" onClick={handleManageGateways}>
-              <FontAwesomeIcon icon={faCog} /> Manage Payment Gateways
-            </CButton>
-          </div>
         </CCardHeader>
 
         <CCardBody>
-          <h5>Total Revenue: ${staticReports.totalRevenue}</h5>
+          <h5>Vendors</h5>
 
-          <h6 className="mt-4">Vendor Payouts</h6>
           <CTable responsive striped hover bordered>
             <CTableHead color="dark">
               <CTableRow>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Vendor</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Amount</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Date</CTableHeaderCell>
+                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                  Vendor ID
+                </CTableHeaderCell>
+                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                  Vendor Name
+                </CTableHeaderCell>
+                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                  Remaining Amount
+                </CTableHeaderCell>
+                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                  Contact
+                </CTableHeaderCell>
+                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                  Actions
+                </CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {staticReports.vendorPayouts.map((payout, index) => (
-                <CTableRow key={index}>
-                  <CTableDataCell style={{ textAlign: "center" }}>{payout.vendor}</CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>${payout.amount}</CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>{payout.date}</CTableDataCell>
+              {vendorsData.length > 0 ? (
+                vendorsData.map((vendor) => (
+                  <CTableRow key={vendor._id}>
+                    <CTableDataCell style={{ textAlign: "center" }}>
+                      {vendor.vendorId}
+                    </CTableDataCell>
+                    <CTableDataCell style={{ textAlign: "center" }}>
+                      {vendor.vendorName}
+                    </CTableDataCell>
+                    <CTableDataCell style={{ textAlign: "center" }}>
+                      ${vendor.remainingAmount}
+                    </CTableDataCell>
+                    <CTableDataCell style={{ textAlign: "center" }}>
+                      {vendor.vendorContact}
+                    </CTableDataCell>
+                    <CTableDataCell style={{ textAlign: "center" }}>
+                      <CButton color="info" onClick={() => handleViewPayouts(vendor)}>
+                        View
+                      </CButton>{" "}
+                      <CButton color="primary" onClick={() => handlePayout(vendor)}>
+                        Payout
+                      </CButton>
+                    </CTableDataCell>
+                  </CTableRow>
+                ))
+              ) : (
+                <CTableRow>
+                  <CTableDataCell colSpan="5" style={{ textAlign: "center" }}>
+                    No vendors found
+                  </CTableDataCell>
                 </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
-
-          <h6 className="mt-4">Transaction History</h6>
-          <CTable responsive striped hover bordered>
-            <CTableHead color="dark">
-              <CTableRow>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Transaction ID</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Amount</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Date</CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>Status</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {staticReports.transactions.map((transaction, index) => (
-                <CTableRow key={index}>
-                  <CTableDataCell style={{ textAlign: "center" }}>{transaction.transactionId}</CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>${transaction.amount}</CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>{transaction.date}</CTableDataCell>
-                  <CTableDataCell style={{ textAlign: "center" }}>{transaction.status}</CTableDataCell>
-                </CTableRow>
-              ))}
+              )}
             </CTableBody>
           </CTable>
         </CCardBody>
       </CCard>
 
-      {/* Manage Payment Gateways Modal */}
       <CModal visible={visible} onClose={handleClose}>
         <CModalHeader onClose={handleClose} closeButton>
-          <CModalTitle>Manage Payment Gateways</CModalTitle>
+          <CModalTitle>Payouts for {selectedVendor?.vendorName}</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          <CForm>
-            <CFormInput
-              type="text"
-              label="Payment Gateway API Key"
-              placeholder="Enter API Key"
-              className="mb-3"
-            />
-            <CFormInput
-              type="text"
-              label="Payment Gateway Secret"
-              placeholder="Enter Secret"
-            />
-          </CForm>
+          {selectedVendor?.payouts.length > 0 ? (
+            <CTable responsive striped hover bordered>
+              <CTableHead color="dark">
+                <CTableRow>
+                  <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                    Amount
+                  </CTableHeaderCell>
+                  <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                    Date
+                  </CTableHeaderCell>
+                </CTableRow>
+              </CTableHead>
+              <CTableBody>
+                {selectedVendor.payouts.map((payout, index) => (
+                  <CTableRow key={index}>
+                    <CTableDataCell style={{ textAlign: "center" }}>
+                      ${payout.amount}
+                    </CTableDataCell>
+                    <CTableDataCell style={{ textAlign: "center" }}>
+                      {payout.date}
+                    </CTableDataCell>
+                  </CTableRow>
+                ))}
+              </CTableBody>
+            </CTable>
+          ) : (
+            <p>No payouts available for this vendor.</p>
+          )}
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={handleClose}>
-            Cancel
-          </CButton>
-          <CButton color="primary" onClick={() => alert("Payment gateway settings saved!")}>
-            Save Changes
+            Close
           </CButton>
         </CModalFooter>
       </CModal>
