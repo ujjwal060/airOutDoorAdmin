@@ -29,7 +29,7 @@ const FinancialManagement = () => {
   useEffect(() => {
     const fetchVendorsData = async () => {
       try {
-        const response = await fetch("http://localhost:8000/payouts/getAll");
+        const response = await fetch("http://44.196.192.232:8000/payouts/getAll");
         const data = await response.json();
 
         if (data.status === 200) {
