@@ -30,6 +30,12 @@ const _nav = [
   },
   {
     component: CNavItem,
+    name: 'Manage Blogs',
+    to: '/blogs-management',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
     name: 'Categories',
     to: '/category-vendors',
     icon: <CIcon icon={cilFeaturedPlaylist} customClassName="nav-icon" />,
