@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef  } from "react";
 import {
   CTable,
   CTableHead,
@@ -31,7 +31,28 @@ const PropertyManagement = () => {
         limit: LIMIT,
       });
       const result = await response.data;
-      setProperties(result.data);
+      const formattedProperties = result.data.map(property => {
+        const formattedStartDate = new Intl.DateTimeFormat('en-US', {
+          month: '2-digit',
+          day: '2-digit',
+          year: 'numeric',
+        }).format(new Date(property.startDate));
+  
+        const formattedEndDate = new Intl.DateTimeFormat('en-US', {
+          month: '2-digit',
+          day: '2-digit',
+          year: 'numeric',
+        }).format(new Date(property.endDate));
+  
+        return {
+          ...property,
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+        };
+      });
+  
+      // Update state with formatted data
+      setProperties(formattedProperties);
       setTotalPages(result.totalPages);
       setCurrentPage(result.currentPage);
       setTotalProperties(result.total);
@@ -75,9 +96,9 @@ const PropertyManagement = () => {
             <CTableHeaderCell>S.No</CTableHeaderCell>
             <CTableHeaderCell>Image</CTableHeaderCell> {/* New Image Column */}
             <CTableHeaderCell>Name</CTableHeaderCell>
-            <CTableHeaderCell>Description</CTableHeaderCell>
-            <CTableHeaderCell>Amenities</CTableHeaderCell>
-            <CTableHeaderCell>Pricing</CTableHeaderCell>
+            <CTableHeaderCell>location</CTableHeaderCell>
+            <CTableHeaderCell>Guest Limit</CTableHeaderCell>
+            <CTableHeaderCell>Guest Pricing</CTableHeaderCell>
             <CTableHeaderCell>Availability</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
@@ -89,21 +110,21 @@ const PropertyManagement = () => {
               </CTableDataCell>
             </CTableRow>
           ) : (
-            properties.map((property, index) => (
+            properties?.map((property, index) => (
               <CTableRow key={property._id}>
                 <CTableDataCell>{startIndex + index}</CTableDataCell>
                 <CTableDataCell>
                   <img
-                    src={property.imageUrl[0]} 
+                    src={property.images[0]} 
                     alt={property.name}
-                    style={{ width: "100px", height: "auto" }}
+                    style={{ width: "50PX", height: "auto" }}
                   />
                 </CTableDataCell>
-                <CTableDataCell>{property.name}</CTableDataCell>
-                <CTableDataCell>{property.description}</CTableDataCell>
-                <CTableDataCell>{property.amenities}</CTableDataCell>
-                <CTableDataCell>{property.pricing}</CTableDataCell>
-                <CTableDataCell>{property.availability}</CTableDataCell>
+                <CTableDataCell>{property.propertyName}</CTableDataCell>
+                <CTableDataCell>{property.location.address}</CTableDataCell>
+                <CTableDataCell>{property.details.guestLimitPerDay}</CTableDataCell>
+                <CTableDataCell>${property.details.guestPricePerDay}</CTableDataCell>
+                <CTableDataCell>{property.startDate} to {property.startDate}</CTableDataCell>
               </CTableRow>
             ))
           )}
