@@ -230,7 +230,7 @@ const FinancialManagement = () => {
                           ? new Date(request.paymentDate).toLocaleDateString()
                           : "N/A"}
                       </CTableDataCell>
-                      <CTableDataCell style={{ textAlign: "center" }}>
+                      {/* <CTableDataCell style={{ textAlign: "center" }}>
                         {request.status === "pending" ? (
                           <>
                             <CButton
@@ -251,7 +251,7 @@ const FinancialManagement = () => {
                         ) : (
                           <span>No actions available</span>
                         )}
-                      </CTableDataCell>
+                      </CTableDataCell> */}
                     </CTableRow>
                   ))}
                 </CTableBody>
