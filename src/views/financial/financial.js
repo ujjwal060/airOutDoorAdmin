@@ -18,6 +18,7 @@ import {
   CPagination,
 } from "@coreui/react";
 import { toast } from "react-toastify"; // Make sure to install react-toastify
+import axios from 'axios';
 
 const FinancialManagement = () => {
   const [vendorsData, setVendorsData] = useState([]);
@@ -51,8 +52,13 @@ const FinancialManagement = () => {
     setCurrentPage(1); // Reset to first page when opening the modal
   };
 
-  const handleApprove = (vendor, request) => {
-    toast.success(`Cashout request for ${vendor.vendorName} approved!`);
+  const handleApprove = async (vendorid, requestid) => {
+    const response = await axios.post("http://44.196.192.232:8000/payouts/approvePayout", {
+      payoutRequestId:requestid,
+      vendorId:vendorid
+    });
+    
+    toast.success(`Cashout request approved!`);
   };
 
   const handleReject = (vendor, request) => {
@@ -224,19 +230,19 @@ const FinancialManagement = () => {
                           ? new Date(request.paymentDate).toLocaleDateString()
                           : "N/A"}
                       </CTableDataCell>
-                      <CTableDataCell style={{ textAlign: "center" }}>
+                      {/* <CTableDataCell style={{ textAlign: "center" }}>
                         {request.status === "pending" ? (
                           <>
                             <CButton
                               color="success"
-                              onClick={() => handleApprove(selectedVendor, request)}
+                              onClick={() => handleApprove(selectedVendor.vendorId, request._id)}
                               className="ms-2"
                             >
                               Approve
                             </CButton>
                             <CButton
                               color="danger"
-                              onClick={() => handleReject(selectedVendor, request)}
+                              onClick={() => handleReject(selectedVendor.vendorId, request._id)}
                               className="ms-2"
                             >
                               Reject
@@ -245,7 +251,7 @@ const FinancialManagement = () => {
                         ) : (
                           <span>No actions available</span>
                         )}
-                      </CTableDataCell>
+                      </CTableDataCell> */}
                     </CTableRow>
                   ))}
                 </CTableBody>

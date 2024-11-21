@@ -86,6 +86,9 @@ const Tables = () => {
                   <CTableHeaderCell>Check In</CTableHeaderCell>
                   <CTableHeaderCell>Check Out</CTableHeaderCell>
                   <CTableHeaderCell>Guests</CTableHeaderCell>
+                  <CTableHeaderCell>VendorId</CTableHeaderCell>
+                  <CTableHeaderCell>Property Name</CTableHeaderCell>
+                  <CTableHeaderCell>User</CTableHeaderCell>
                   <CTableHeaderCell>Camper</CTableHeaderCell>
                   <CTableHeaderCell>Price</CTableHeaderCell>
                   <CTableHeaderCell>Action</CTableHeaderCell>
@@ -93,7 +96,7 @@ const Tables = () => {
               </CTableHead>
               <CTableBody>
                 {currentBookings.length > 0 ? (
-                  currentBookings.map((Booking, index) => (
+                  currentBookings?.map((Booking, index) => (
                     <CTableRow key={Booking._id}>
                       <CTableHeaderCell scope="row">
                         {index + 1 + (currentPage - 1) * rowsPerPage}
@@ -101,6 +104,9 @@ const Tables = () => {
                       <CTableDataCell>{new Date(Booking.checkInDate).toLocaleDateString()}</CTableDataCell>
                       <CTableDataCell>{new Date(Booking.checkOutDate).toLocaleDateString()}</CTableDataCell>
                       <CTableDataCell>{Booking.guests}</CTableDataCell>
+                      <CTableHeaderCell>{Booking.vendorId}</CTableHeaderCell>
+                  <CTableHeaderCell>{Booking.propertyDetails.propertyName}</CTableHeaderCell>
+                  <CTableHeaderCell>{Booking.userId}</CTableHeaderCell>
                       <CTableDataCell>{Booking.camper ? 'Yes' : 'No'}</CTableDataCell>
                       <CTableDataCell>{Booking.totalAmount}</CTableDataCell>
                       <CTableDataCell>
