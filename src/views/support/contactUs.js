@@ -10,45 +10,41 @@ import {
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CModal,
-  CModalHeader,
-  CModalTitle,
-  CModalFooter,
-  CModalBody,
-  CForm,
-  CFormInput,
-  CFormTextarea,
   CFormSelect,
-  CInputGroup,
-  CInputGroupText,
 } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEdit, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faEdit } from '@fortawesome/free-solid-svg-icons'
 import axios from 'axios'
 
 const SupportHelpManagement = () => {
   const [tickets, setTickets] = useState([])
-  const [selectedTicket, setSelectedTicket] = useState(null)
-  const [visible, setVisible] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
-  const [responseMessage, setResponseMessage] = useState('')
+  const [filteredTickets, setFilteredTickets] = useState([])
+  const [filter, setFilter] = useState('all')
 
-  const handleEdit = (ticket) => {
-    setSelectedTicket(ticket)
-    setResponseMessage(ticket.message)
-    setIsEditing(true)
-    setVisible(true)
+  const handleFilterChange = (e) => {
+    const selectedFilter = e.target.value
+    setFilter(selectedFilter)
+
+    if (selectedFilter === 'read') {
+      setFilteredTickets(tickets.filter((ticket) => ticket.isRead))
+    } else if (selectedFilter === 'unread') {
+      setFilteredTickets(tickets.filter((ticket) => !ticket.isRead))
+    } else {
+      setFilteredTickets(tickets)
+    }
   }
 
   const getAllQueries = async () => {
     const res = await axios.get('http://localhost:8000/contact/getContactUs')
     setTickets(res.data.allContactUs)
+    setFilteredTickets(res.data.allContactUs) // Initialize filtered tickets
   }
+
   const markTicketRead = async (id) => {
-    console.log(id)
-    const res = await axios.put(`http://localhost:8000/contact/markRead/${id}`)
-    console.log(res)
+    await axios.put(`http://localhost:8000/contact/markRead/${id}`)
+    getAllQueries()
   }
+
   useEffect(() => {
     getAllQueries()
   }, [])
@@ -56,8 +52,23 @@ const SupportHelpManagement = () => {
   return (
     <>
       <CCard>
-        <CCardHeader>
+        <CCardHeader className="d-flex justify-content-between align-items-center">
           <h3>Support and Help Management</h3>
+          <div className="d-flex align-items-center ms-auto">
+            <label htmlFor="filter-select" className="me-2 fw-bold">
+              Filter:
+            </label>
+            <CFormSelect
+              id="filter-select"
+              value={filter}
+              onChange={handleFilterChange}
+              style={{ maxWidth: '200px' }}
+            >
+              <option value="all">All</option>
+              <option value="read">Read</option>
+              <option value="unread">Unread</option>
+            </CFormSelect>
+          </div>
         </CCardHeader>
 
         <CCardBody>
@@ -71,7 +82,7 @@ const SupportHelpManagement = () => {
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {tickets.map((ticket) => (
+              {filteredTickets.map((ticket) => (
                 <CTableRow key={ticket._id}>
                   <CTableDataCell>{ticket.name}</CTableDataCell>
                   <CTableDataCell>{ticket.email}</CTableDataCell>
