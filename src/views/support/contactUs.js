@@ -35,13 +35,13 @@ const SupportHelpManagement = () => {
   }
 
   const getAllQueries = async () => {
-    const res = await axios.get('http://localhost:8000/contact/getContactUs')
+    const res = await axios.get('http://44.196.192.232:8000/contact/getContactUs')
     setTickets(res.data.allContactUs)
     setFilteredTickets(res.data.allContactUs) // Initialize filtered tickets
   }
 
   const markTicketRead = async (id) => {
-    await axios.put(`http://localhost:8000/contact/markRead/${id}`)
+    await axios.put(`http://44.196.192.232:8000/contact/markRead/${id}`)
     getAllQueries()
   }
 
