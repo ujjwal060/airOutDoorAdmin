@@ -53,7 +53,7 @@ const SupportHelpManagement = () => {
     <>
       <CCard>
         <CCardHeader className="d-flex justify-content-between align-items-center">
-          <h3>Support and Help Management</h3>
+          <h3>Support/Contact Management</h3>
           <div className="d-flex align-items-center ms-auto">
             <label htmlFor="filter-select" className="me-2 fw-bold">
               Filter:
