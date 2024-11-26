@@ -75,7 +75,7 @@ const Blogs = () => {
 
   const getBlogs = async () => {
     try {
-      const res = await axios.get('http://44.196.192.232:8000/blogs/get-blogs')
+      const res = await axios.get('http://localhost:8000/blogs/get-blogs')
       setBlogs(res.data.updatedBlogList)
     } catch (error) {
       console.error('Error while fetching blogs:', error)
@@ -107,9 +107,9 @@ const Blogs = () => {
       let response
       if (isEditing) {
         const blogId = blogs[editingIndex]._id
-        response = await axios.put(`http://44.196.192.232:8000/blogs/update/${blogId}`, blogSubmitData)
+        response = await axios.put(`http://localhost:8000/blogs/update/${blogId}`, blogSubmitData)
       } else {
-        response = await axios.post('http://44.196.192.232:8000/blogs/createBlog', blogSubmitData)
+        response = await axios.post('http://localhost:8000/blogs/createBlog', blogSubmitData)
       }
 
       if (response.status === 200 || response.status === 201) {
@@ -142,7 +142,7 @@ const Blogs = () => {
   // Delete a blog
   const handleDelete = async (blogId) => {
     try {
-      const response = await axios.delete(`http://44.196.192.232:8000/blogs/delete/${blogId}`)
+      const response = await axios.delete(`http://localhost:8000/blogs/delete/${blogId}`)
       if (response.status === 200) {
         setBlogs(blogs.filter((blog) => blog._id !== blogId))
       }
