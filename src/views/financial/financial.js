@@ -30,7 +30,7 @@ const FinancialManagement = () => {
   useEffect(() => {
     const fetchVendorsData = async () => {
       try {
-        const response = await fetch("http://localhost:8000/payouts/getAll");
+        const response = await fetch("http://18.209.197.35:8000/payouts/getAll");
         const data = await response.json();
 
         if (data.status === 200) {
@@ -53,7 +53,7 @@ const FinancialManagement = () => {
   };
 
   const handleApprove = async (vendorid, requestid) => {
-    const response = await axios.post("http://localhost:8000/payouts/approvePayout", {
+    const response = await axios.post("http://18.209.197.35:8000/payouts/approvePayout", {
       payoutRequestId:requestid,
       vendorId:vendorid
     });

@@ -32,7 +32,7 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:8000/admin/login", { email, password });
+      const response = await axios.post("http://18.209.197.35:8000/admin/login", { email, password });
       if (response.status === 200) {
         const { token } = response.data;
         localStorage.setItem('token', token);
