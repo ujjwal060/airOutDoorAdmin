@@ -11,8 +11,9 @@ import {
   CFormTextarea,
   CContainer,
   CFormSelect,
-  CSpinner // Import the spinner component for the loader
+  CSpinner
 } from '@coreui/react';
+import axios from 'axios';
 
 const Broadcast = () => {
   const [notifications, setNotifications] = useState([]);
@@ -21,7 +22,7 @@ const Broadcast = () => {
     body: '',
     role: '',
   });
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false);
 
   const handleNewNotificationChange = (e) => {
     const { name, value } = e.target;
@@ -36,26 +37,16 @@ const Broadcast = () => {
   };
 
   const handleSendNotification = async () => {
-    setLoading(true); // Set loading to true when starting the request
-    const newNotif = {
-      ...newNotification,
-      timestamp: new Date().toLocaleString(),
-    };
-
+    setLoading(true);
+  
     try {
-      const response = await fetch('http://44.196.192.232:3002/api/admin/sendN', {
-        method: 'POST',
+      const response = await axios.post('http://18.209.197.35:8000/notification/send', newNotification, {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newNotif),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to send notification');
-      }
-      const result = await response.json();
-      setNotifications([result, ...notifications]);
+  
+      setNotifications([response.data]);
       setNewNotification({ title: '', body: '', role: '' });
     } catch (error) {
       console.error('Error sending notification:', error);
