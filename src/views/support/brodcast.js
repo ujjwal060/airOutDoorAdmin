@@ -28,7 +28,7 @@ const Broadcast = () => {
     const { name, value } = e.target;
     let mappedValue = value;
     if (name === "role") {
-      mappedValue = value === "Users" ? "user" : "vendor";
+      mappedValue = value === "Users" ? "user" : value === "Vendors" ? "vendor" : "";
     }
     setNewNotification((prevState) => ({
       ...prevState,
@@ -38,20 +38,20 @@ const Broadcast = () => {
 
   const handleSendNotification = async () => {
     setLoading(true);
-  
+
     try {
       const response = await axios.post('http://18.209.197.35:8000/notification/send', newNotification, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
-  
+
       setNotifications([response.data]);
       setNewNotification({ title: '', body: '', role: '' });
     } catch (error) {
       console.error('Error sending notification:', error);
     } finally {
-      setLoading(false); // Set loading to false after the request is complete
+      setLoading(false);
     }
   };
 
@@ -87,7 +87,7 @@ const Broadcast = () => {
                     <CFormSelect
                       id="role"
                       name="role"
-                      value={newNotification.role === 'user' ? 'Users' : 'Vendors'}
+                      value={newNotification.role === 'user' ? 'Users' : newNotification.role === 'vendor' ? 'Vendors' : ''}
                       onChange={handleNewNotificationChange}
                       required
                     >
@@ -98,9 +98,9 @@ const Broadcast = () => {
                   </CCol>
                 </div>
 
-                <CButton 
-                  color="primary" 
-                  onClick={handleSendNotification} 
+                <CButton
+                  color="primary"
+                  onClick={handleSendNotification}
                   disabled={loading} // Disable the button while loading
                 >
                   {loading ? <CSpinner size="sm" /> : 'Send Notification'}
