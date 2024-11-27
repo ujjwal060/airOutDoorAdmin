@@ -40,7 +40,7 @@ const Broadcast = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8000/notification/send', newNotification, {
+      const response = await axios.post('http://44.196.64.110:8000/notification/send', newNotification, {
         headers: {
           'Content-Type': 'application/json',
         },

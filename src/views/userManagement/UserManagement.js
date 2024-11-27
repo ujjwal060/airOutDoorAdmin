@@ -29,7 +29,7 @@ const PropertyManagement = () => {
 
   const fetchUsers = async (page = 1, search = "") => {
     try {
-      const response = await axios.post("http://localhost:8000/admin/alluser", {
+      const response = await axios.post("http://44.196.64.110:8000/admin/alluser", {
         search: search,
         page: page,
         limit: LIMIT,
