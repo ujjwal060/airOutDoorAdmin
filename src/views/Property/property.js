@@ -25,7 +25,7 @@ const PropertyManagement = () => {
 
   const fetchProperties = async (page = 1, search = "") => {
     try {
-      const response = await axios.post("http://18.209.197.35:8000/admin/allProoerty", {
+      const response = await axios.post("http://localhost:8000/admin/allProoerty", {
         search: search,
         page: page,
         limit: LIMIT,

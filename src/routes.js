@@ -16,6 +16,7 @@ const property=React.lazy(()=>import('./views/Property/property'))
 const bookings=React.lazy(()=>import('./views/BookingsManage/bookings'))
 const categories=React.lazy(()=>import('./views/categories/categories'))
 const Blogs =React.lazy(()=>import('./views/BlogManagement/Blogs'))
+const Blogcreate=React.lazy(()=>import('./views/BlogManagement/BlogCreate'))
 
 
 
@@ -27,6 +28,8 @@ const routes = [
   { path: '/manage-users', name: 'Manage Users', element: UserManagement },
   { path: '/manage-vendors', name: 'Manage Vendors', element: VendorManagement },
   { path: '/blogs-management', name: 'Manage Blogs', element: Blogs },
+  { path: '/Blogcreate', name: 'Manage Blogs Create', element: Blogcreate },
+  { path: '/Blogeditor', name: 'Manage Blogs Editor', element: Blogcreate },
   { path: '/new', name: 'New', element: New },
   { path: '/analytics&Reporting', name: 'Analytics&Reporting', element: AnalyticsReporting },
   { path: '/financial', name: 'Financial', element: financial },
