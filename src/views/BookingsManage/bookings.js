@@ -105,7 +105,7 @@ const Tables = () => {
                       <CTableDataCell>{new Date(Booking.checkOutDate).toLocaleDateString()}</CTableDataCell>
                       <CTableDataCell>{Booking.guests}</CTableDataCell>
                       <CTableHeaderCell>{Booking.vendorId}</CTableHeaderCell>
-                  <CTableHeaderCell>{Booking.propertyDetails.propertyName}</CTableHeaderCell>
+                  <CTableHeaderCell>{Booking?.propertyDetails?.propertyName}</CTableHeaderCell>
                   <CTableHeaderCell>{Booking.userId}</CTableHeaderCell>
                       <CTableDataCell>{Booking.camper ? 'Yes' : 'No'}</CTableDataCell>
                       <CTableDataCell>{Booking.totalAmount}</CTableDataCell>
