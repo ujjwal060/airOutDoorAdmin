@@ -37,7 +37,7 @@ const AdminLogin = () => {
         const { token } = response.data;
         localStorage.setItem('token', token);
 
-        navigate('/Dashboard');
+        navigate('/manage-users');
       } else {
         setError(response.data.message || 'Failed to login. Please check your credentials.');
       }

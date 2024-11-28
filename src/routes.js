@@ -23,7 +23,7 @@ const Blogcreate=React.lazy(()=>import('./views/BlogManagement/BlogCreate'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
-  { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+  // { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/Species', name: 'Species', element: Species },
   { path: '/Extension', name: 'Extension', element: Extension },
   { path: '/manage-users', name: 'Manage Users', element: UserManagement },
