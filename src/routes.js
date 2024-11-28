@@ -1,4 +1,5 @@
 import React from 'react'
+import W9Form from './views/w9Form/W9Form'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const UserManagement = React.lazy(() => import('./views/userManagement/UserManagement'))
@@ -36,10 +37,11 @@ const routes = [
   { path: '/content', name: 'Content Management', element: content },
   { path: '/contactUs', name: 'ContactUs', element: ContactUs },
   { path: '/broadcast', name: 'Broadcast', element: Broadcast }, 
-  { path: '/feedback', name: 'Feedback', element: feedback },
+  // { path: '/feedback', name: 'Feedback', element: feedback },
   { path: '/property', name: 'Property', element: property },
   { path: '/booking', name: 'Bookings', element: bookings },
   { path: '/category-vendors', name: 'Categories', element: categories },
+  { path: '/w9-form', name: 'W9-Form', element: W9Form },
 
 
 ]

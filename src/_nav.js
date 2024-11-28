@@ -58,12 +58,12 @@ const _nav = [
     to: '/booking',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
-  // {
-  //   component: CNavItem,
-  //   name: 'Content  Management',
-  //   to: '/content ',
-  //   icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
-  // },
+  {
+    component: CNavItem,
+    name: 'W9 Form Management',
+    to: '/w9-form',
+    icon: <CIcon icon={cilFeaturedPlaylist} customClassName="nav-icon" />,
+  },
   {
     component: CNavGroup,
     name: 'Support',
@@ -79,11 +79,11 @@ const _nav = [
         name: 'Broadcast',
         to: '/broadcast',
       },
-      {
-        component: CNavItem,
-        name: 'Feedback',
-        to: '/feedback',
-      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Feedback',
+      //   to: '/feedback',
+      // },
     ],
   },
 ]
