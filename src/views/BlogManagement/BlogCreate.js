@@ -15,6 +15,7 @@ const Blogcreate = () => {
   const location = useLocation();
   const [blog, setBlog] = useState({
     title: '',
+    description:'',
     category: '',
     content: '',
     date: '',
@@ -59,6 +60,7 @@ const Blogcreate = () => {
 
     const formData = new FormData();
     formData.append('title', blog.title);
+    formData.append('description', blog.description);
     formData.append('category', blog.category);
     formData.append('content', blog.content);
     formData.append('date', blog.date);
@@ -93,6 +95,10 @@ const Blogcreate = () => {
           <div className="mb-3">
             <label htmlFor="title" className="form-label">Title</label>
             <input id="title" name="title" value={blog.title} onChange={handleChange} required className="form-control" />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="description" className="form-label">Title</label>
+            <input id="description" name="description" value={blog.description} onChange={handleChange} required className="form-control" />
           </div>
           <div className="mb-3">
             <label htmlFor="category" className="form-label">Category</label>
