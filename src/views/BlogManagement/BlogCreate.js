@@ -97,7 +97,7 @@ const Blogcreate = () => {
             <input id="title" name="title" value={blog.title} onChange={handleChange} required className="form-control" />
           </div>
           <div className="mb-3">
-            <label htmlFor="description" className="form-label">Title</label>
+            <label htmlFor="description" className="form-label">Description</label>
             <input id="description" name="description" value={blog.description} onChange={handleChange} required className="form-control" />
           </div>
           <div className="mb-3">
