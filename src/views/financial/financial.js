@@ -22,6 +22,7 @@ import axios from 'axios';
 
 const FinancialManagement = () => {
   const [vendorsData, setVendorsData] = useState([]);
+  const [totalExp, settotalExp] = useState();
   const [visible, setVisible] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,7 +35,9 @@ const FinancialManagement = () => {
         const data = await response.json();
 
         if (data.status === 200) {
-          setVendorsData(data.data);
+          console.log(data.data)
+          settotalExp(data.data.totalExpense)
+          setVendorsData(data.data.allPay);
         } else {
           toast.error(`Failed to fetch data: ${data.message}`);
         }
@@ -100,6 +103,7 @@ const FinancialManagement = () => {
       <CCard>
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <h3>Financial Management</h3>
+          {totalExp &&<h5 style={{color:"blue"}}>Total Expense:${totalExp}</h5>}
         </CCardHeader>
 
         <CCardBody>
