@@ -59,7 +59,7 @@ const FinancialManagement = () => {
 
   const handleApprove = async (vendorid, requestid, amountRequested) => {
     try {
-      const response = await axios.post('http://localhost:8000/payouts/approvePayout', {
+      const response = await axios.post('http://44.196.64.110:8000/payouts/approvePayout', {
         payoutRequestId: requestid,
         vendorId: vendorid,
         amountRequested,
