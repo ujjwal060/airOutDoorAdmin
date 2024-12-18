@@ -161,6 +161,7 @@ const PropertyManagement = () => {
             <CTableHeaderCell>Name</CTableHeaderCell>
             <CTableHeaderCell>location</CTableHeaderCell>
             <CTableHeaderCell>Availability</CTableHeaderCell>
+            <CTableHeaderCell className=" text-center">Price Per Person/Day</CTableHeaderCell>
             <CTableHeaderCell>Details</CTableHeaderCell>
             <CTableHeaderCell>Action</CTableHeaderCell>
           </CTableRow>
@@ -187,6 +188,9 @@ const PropertyManagement = () => {
                 <CTableDataCell>{property.location.address}</CTableDataCell>
                 <CTableDataCell>
                   {property.startDate} to {property.startDate}
+                </CTableDataCell>
+                <CTableDataCell className=" text-center">
+                  {property.pricePerPersonPerDay}
                 </CTableDataCell>
                 <CTableDataCell>
                   <CButton color="primary" onClick={() => handleViewDetails(property)}>
@@ -228,12 +232,6 @@ const PropertyManagement = () => {
                   <strong>Description:</strong> {selectedProperty.propertyDescription}
                 </p>
 
-                {/* Price Range */}
-                <p>
-                  <strong>Price Range:</strong> ${selectedProperty.priceRange.min} - $
-                  {selectedProperty.priceRange.max}
-                </p>
-
                 {/* Address */}
                 <p>
                   <strong>Address:</strong> {selectedProperty.location.address}
@@ -244,6 +242,33 @@ const PropertyManagement = () => {
                   <strong>Coordinates:</strong> Latitude: {selectedProperty.location.latitude},
                   Longitude: {selectedProperty.location.longitude}
                 </p>
+                <h4>Custom Details</h4>
+                {selectedProperty.customFields.length > 0 ? (
+                  <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>
+                          Field Name
+                        </th>
+                        <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>
+                          Value
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedProperty.customFields.map((field, index) => (
+                        <tr key={index}>
+                          <td style={{ border: '1px solid #ddd', padding: '8px' }}>{field.key}</td>
+                          <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                            {field.value}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p>No custom fields available.</p>
+                )}
 
                 {/* Vendor ID */}
                 <p>
