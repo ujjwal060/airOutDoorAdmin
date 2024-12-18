@@ -36,7 +36,7 @@ const PropertyManagement = () => {
   const [inputModal, setInputModal] = useState(false)
   const [approvalPropertyId, setApprovalPropertyId] = useState(null)
   const [formData, setFormData] = useState({
-    commisionPercent: null,
+    adminCommission: null,
     dropdownValue: '',
   })
 
@@ -44,7 +44,7 @@ const PropertyManagement = () => {
   const handleInputChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      commisionPercent: e.target.value,
+      adminCommission: e.target.value,
     }))
   }
 
@@ -97,7 +97,7 @@ const PropertyManagement = () => {
   const handleCommissionApproval = async () => {
     try {
       const dataToSubmit = { ...formData, approvalPropertyId }
-      if (parseFloat(dataToSubmit.commisionPercent) > 100) {
+      if (parseFloat(dataToSubmit.adminCommission) > 100) {
         toast.warn('Commission Percentage should be less than or equal to 100%')
         return
       }
@@ -105,7 +105,7 @@ const PropertyManagement = () => {
         'http://44.196.64.110:8000/property/commission-approve',
         dataToSubmit,
       )
-      setFormData({ commisionPercent: null, dropdownValue: '' })
+      setFormData({ adminCommission: null, dropdownValue: '' })
       toast.success(approvalData.data.message)
       console.log('into commissional submission', approvalData)
       setInputModal(false)
@@ -162,6 +162,7 @@ const PropertyManagement = () => {
             <CTableHeaderCell>location</CTableHeaderCell>
             <CTableHeaderCell>Availability</CTableHeaderCell>
             <CTableHeaderCell className=" text-center">Price Per Person/Day</CTableHeaderCell>
+            <CTableHeaderCell className=" text-center">Commission</CTableHeaderCell>
             <CTableHeaderCell>Details</CTableHeaderCell>
             <CTableHeaderCell>Action</CTableHeaderCell>
           </CTableRow>
@@ -192,6 +193,12 @@ const PropertyManagement = () => {
                 <CTableDataCell className=" text-center">
                   {property.pricePerPersonPerDay}
                 </CTableDataCell>
+                {property?.adminCommission ?(
+                  <CTableDataCell className=" text-center">
+                    {property?.adminCommission}%
+                  </CTableDataCell>
+                ):<CTableDataCell className=" text-center"></CTableDataCell>}
+
                 <CTableDataCell>
                   <CButton color="primary" onClick={() => handleViewDetails(property)}>
                     <FaEye />
@@ -274,6 +281,9 @@ const PropertyManagement = () => {
                 <p>
                   <strong>Vendor ID:</strong> {selectedProperty.vendorId}
                 </p>
+                <p>
+                  <strong>Vendor ID:</strong> {selectedProperty.vendorId}
+                </p>
 
                 {/* Category */}
                 <p>
@@ -344,13 +354,13 @@ const PropertyManagement = () => {
             <CModalBody>
               {/* Input field */}
               <div className="mb-3">
-                <CFormLabel htmlFor="commisionPercent">
+                <CFormLabel htmlFor="adminCommission">
                   Enter Commission for this Property
                 </CFormLabel>
                 <CFormInput
                   type="number"
-                  id="commisionPercent"
-                  value={formData.commisionPercent}
+                  id="adminCommission"
+                  value={formData.adminCommission}
                   onChange={handleInputChange}
                   placeholder="Commission Percentage"
                 />
