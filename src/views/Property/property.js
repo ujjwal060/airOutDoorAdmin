@@ -36,7 +36,8 @@ const PropertyManagement = () => {
   const [inputModal, setInputModal] = useState(false)
   const [approvalPropertyId, setApprovalPropertyId] = useState(null)
   const [formData, setFormData] = useState({
-    adminCommission: null,
+    adminCommission: '',
+    cancellationCharge: '',
     dropdownValue: '',
   })
 
@@ -44,7 +45,7 @@ const PropertyManagement = () => {
   const handleInputChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      adminCommission: e.target.value,
+      [e.target.name]: e.target.value,
     }))
   }
 
@@ -97,17 +98,28 @@ const PropertyManagement = () => {
   const handleCommissionApproval = async () => {
     try {
       const dataToSubmit = { ...formData, approvalPropertyId }
-      if (parseFloat(dataToSubmit.adminCommission) > 100) {
+      if (
+        !dataToSubmit.adminCommission ||
+        !dataToSubmit.cancellationCharge ||
+        !dataToSubmit.approvalPropertyId ||
+        !dataToSubmit.dropdownValue
+      ) {
+        toast.warn('Please Fill All the Fields')
+        return
+      }
+      if (
+        parseFloat(dataToSubmit.adminCommission) > 100 ||
+        parseFloat(dataToSubmit?.cancellationCharge) > 100
+      ) {
         toast.warn('Commission Percentage should be less than or equal to 100%')
         return
       }
       const approvalData = await axios.patch(
-        'http://44.196.64.110:8000/property/commission-approve',
+        'http://localhost:8000/property/commission-approve',
         dataToSubmit,
       )
       setFormData({ adminCommission: null, dropdownValue: '' })
       toast.success(approvalData.data.message)
-      console.log('into commissional submission', approvalData)
       setInputModal(false)
       fetchProperties()
     } catch (error) {
@@ -163,6 +175,7 @@ const PropertyManagement = () => {
             <CTableHeaderCell>Availability</CTableHeaderCell>
             <CTableHeaderCell className=" text-center">Price Per Person/Day</CTableHeaderCell>
             <CTableHeaderCell className=" text-center">Commission</CTableHeaderCell>
+            <CTableHeaderCell className=" text-center">Cancel Charge</CTableHeaderCell>
             <CTableHeaderCell>Details</CTableHeaderCell>
             <CTableHeaderCell>Action</CTableHeaderCell>
           </CTableRow>
@@ -193,11 +206,20 @@ const PropertyManagement = () => {
                 <CTableDataCell className=" text-center">
                   {property.pricePerPersonPerDay}
                 </CTableDataCell>
-                {property?.adminCommission ?(
+                {property?.adminCommission ? (
                   <CTableDataCell className=" text-center">
                     {property?.adminCommission}%
                   </CTableDataCell>
-                ):<CTableDataCell className=" text-center"></CTableDataCell>}
+                ) : (
+                  <CTableDataCell className=" text-center"></CTableDataCell>
+                )}
+                {property?.cancellationCharge ? (
+                  <CTableDataCell className=" text-center">
+                    {property?.cancellationCharge}%
+                  </CTableDataCell>
+                ) : (
+                  <CTableDataCell className=" text-center"></CTableDataCell>
+                )}
 
                 <CTableDataCell>
                   <CButton color="primary" onClick={() => handleViewDetails(property)}>
@@ -243,12 +265,13 @@ const PropertyManagement = () => {
                 <p>
                   <strong>Address:</strong> {selectedProperty.location.address}
                 </p>
-
-                {/* Coordinates */}
                 <p>
-                  <strong>Coordinates:</strong> Latitude: {selectedProperty.location.latitude},
-                  Longitude: {selectedProperty.location.longitude}
+                  <strong>Cancellation Charge : </strong> {"%"+selectedProperty?.cancellationCharge}
                 </p>
+                <p>
+                  <strong>Admin Commission : </strong> {"%"+selectedProperty?.adminCommission}
+                </p>
+                
                 <h4>Custom Details</h4>
                 {selectedProperty.customFields.length > 0 ? (
                   <table style={{ borderCollapse: 'collapse', width: '100%' }}>
@@ -359,10 +382,24 @@ const PropertyManagement = () => {
                 </CFormLabel>
                 <CFormInput
                   type="number"
+                  name="adminCommission"
                   id="adminCommission"
                   value={formData.adminCommission}
                   onChange={handleInputChange}
                   placeholder="Commission Percentage"
+                />
+              </div>
+              <div className="mb-3">
+                <CFormLabel htmlFor="cancellationCharge">
+                  Enter cancellation Charge for this Property
+                </CFormLabel>
+                <CFormInput
+                  type="number"
+                  name="cancellationCharge"
+                  id="cancellationCharge"
+                  value={formData.cancellationCharge}
+                  onChange={handleInputChange}
+                  placeholder="Cancellation Charge in %"
                 />
               </div>
 
