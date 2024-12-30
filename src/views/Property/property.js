@@ -115,7 +115,7 @@ const PropertyManagement = () => {
         return
       }
       const approvalData = await axios.patch(
-        'http://localhost:8000/property/commission-approve',
+        'http://44.196.64.110:8000/property/commission-approve',
         dataToSubmit,
       )
       setFormData({ adminCommission: null, dropdownValue: '' })
