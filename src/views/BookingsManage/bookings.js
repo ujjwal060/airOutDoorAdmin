@@ -45,23 +45,12 @@ const Tables = () => {
     fetchData()
   }, [])
 
-  // Delete a booking by ID
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://44.196.64.110:8000/booking/delete/${id}`)
-      setBookings(Bookings.filter((booking) => booking._id !== id))
-    } catch (error) {
-      console.error('Error deleting booking:', error)
-      setError('Failed to delete booking')
-    }
-  }
+  
 
-  // Calculate current bookings for pagination
   const indexOfLastBooking = currentPage * rowsPerPage
   const indexOfFirstBooking = indexOfLastBooking - rowsPerPage
   const currentBookings = Bookings.slice(indexOfFirstBooking, indexOfLastBooking)
 
-  // Pagination logic
   const totalPages = Math.ceil(Bookings.length / rowsPerPage)
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
