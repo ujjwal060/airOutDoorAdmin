@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react'
 import {
   CCard,
   CCardHeader,
@@ -67,9 +67,9 @@ const FinancialManagement = () => {
   };
 
   const handleClose = () => {
-    setVisible(false);
-    setSelectedVendor(null);
-  };
+    setVisible(false)
+    setSelectedVendor(null)
+  }
 
   const sortedVendorsData = vendorsData.sort((a, b) => {
     const aHasPendingRequest = a.cashoutRequests?.some(
@@ -88,14 +88,15 @@ const FinancialManagement = () => {
     : [];
 
   const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  };
+    setCurrentPage(newPage)
+  }
 
   return (
     <>
       <CCard>
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <h3>Financial Management</h3>
+          {totalExp && <h5 style={{ color: 'blue' }}>Total Expense:${totalExp}</h5>}
         </CCardHeader>
 
         <CCardBody>
@@ -104,22 +105,22 @@ const FinancialManagement = () => {
           <CTable responsive striped hover bordered>
             <CTableHead color="dark">
               <CTableRow>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                <CTableHeaderCell scope="col" style={{ textAlign: 'center' }}>
                   Vendor ID
                 </CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                <CTableHeaderCell scope="col" style={{ textAlign: 'center' }}>
                   Vendor Name
                 </CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                <CTableHeaderCell scope="col" style={{ textAlign: 'center' }}>
                   Remaining Amount
                 </CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                <CTableHeaderCell scope="col" style={{ textAlign: 'center' }}>
                   Contact
                 </CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                <CTableHeaderCell scope="col" style={{ textAlign: 'center' }}>
                   Status
                 </CTableHeaderCell>
-                <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                <CTableHeaderCell scope="col" style={{ textAlign: 'center' }}>
                   Actions
                 </CTableHeaderCell>
               </CTableRow>
@@ -134,31 +135,29 @@ const FinancialManagement = () => {
                     <CTableRow
                       key={vendor._id}
                       style={{
-                        backgroundColor: hasPendingRequest ? "#f8d7da" : "", // Highlight the row with a background color
+                        backgroundColor: hasPendingRequest ? '#f8d7da' : '', // Highlight the row with a background color
                       }}
                     >
-                      <CTableDataCell style={{ textAlign: "center" }}>
+                      <CTableDataCell style={{ textAlign: 'center' }}>
                         {vendor.vendorId}
                       </CTableDataCell>
-                      <CTableDataCell style={{ textAlign: "center" }}>
+                      <CTableDataCell style={{ textAlign: 'center' }}>
                         {vendor.vendorName}
                       </CTableDataCell>
-                      <CTableDataCell style={{ textAlign: "center" }}>
+                      <CTableDataCell style={{ textAlign: 'center' }}>
                         ${vendor.remainingAmount}
                       </CTableDataCell>
-                      <CTableDataCell style={{ textAlign: "center" }}>
+                      <CTableDataCell style={{ textAlign: 'center' }}>
                         {vendor.vendorContact}
                       </CTableDataCell>
-                      <CTableDataCell style={{ textAlign: "center" }}>
+                      <CTableDataCell style={{ textAlign: 'center' }}>
                         {hasPendingRequest ? (
-                          <span style={{ color: "red", fontWeight: "bold" }}>
-                            Request Received
-                          </span>
+                          <span style={{ color: 'red', fontWeight: 'bold' }}>Request Received</span>
                         ) : (
-                          "No Requests"
+                          'No Requests'
                         )}
                       </CTableDataCell>
-                      <CTableDataCell style={{ textAlign: "center" }}>
+                      <CTableDataCell style={{ textAlign: 'center' }}>
                         <CButton
                           color="info"
                           onClick={() => handleViewPayouts(vendor)}
@@ -168,11 +167,11 @@ const FinancialManagement = () => {
                         </CButton>
                       </CTableDataCell>
                     </CTableRow>
-                  );
+                  )
                 })
               ) : (
                 <CTableRow>
-                  <CTableDataCell colSpan="6" style={{ textAlign: "center" }}>
+                  <CTableDataCell colSpan="6" style={{ textAlign: 'center' }}>
                     No vendors found
                   </CTableDataCell>
                 </CTableRow>
@@ -204,13 +203,13 @@ const FinancialManagement = () => {
                     <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
                       Request Date
                     </CTableHeaderCell>
-                    <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                    <CTableHeaderCell scope="col" style={{ textAlign: 'center' }}>
                       Status
                     </CTableHeaderCell>
-                    <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                    <CTableHeaderCell scope="col" style={{ textAlign: 'center' }}>
                       Payment Date
                     </CTableHeaderCell>
-                    <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                    <CTableHeaderCell scope="col" style={{ textAlign: 'center' }}>
                       Actions
                     </CTableHeaderCell>
                   </CTableRow>
@@ -230,10 +229,10 @@ const FinancialManagement = () => {
                       <CTableDataCell style={{ textAlign: "center" }}>
                         {new Date(request.requestDate).toLocaleDateString()}
                       </CTableDataCell>
-                      <CTableDataCell style={{ textAlign: "center" }}>
+                      <CTableDataCell style={{ textAlign: 'center' }}>
                         {request.status}
                       </CTableDataCell>
-                      <CTableDataCell style={{ textAlign: "center" }}>
+                      <CTableDataCell style={{ textAlign: 'center' }}>
                         {request.paymentDate
                           ? new Date(request.paymentDate).toLocaleDateString()
                           : "-- -- --"}
@@ -273,7 +272,7 @@ const FinancialManagement = () => {
         </CModalFooter>
       </CModal>
     </>
-  );
-};
+  )
+}
 
-export default FinancialManagement;
+export default FinancialManagement

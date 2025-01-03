@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react'
 import {
   CTable,
   CTableHead,
@@ -9,80 +9,80 @@ import {
   CButton,
   CPagination,
   CPaginationItem,
-} from "@coreui/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faBan } from "@fortawesome/free-solid-svg-icons";
-import { FaTimes } from "react-icons/fa";
-import axios from "axios";
+} from '@coreui/react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck, faBan } from '@fortawesome/free-solid-svg-icons'
+import { FaTimes } from 'react-icons/fa'
+import axios from 'axios'
 
 const VendorManagement = () => {
-  const [users, setUsers] = useState([]);
-  const [searchUser, setSearchUser] = useState("");
-  const [totalPages, setTotalPages] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalUsers, setTotalUsers] = useState(0);
-  const LIMIT = 10;
+  const [users, setUsers] = useState([])
+  const [searchUser, setSearchUser] = useState('')
+  const [totalPages, setTotalPages] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalUsers, setTotalUsers] = useState(0)
+  const LIMIT = 10
 
-  const fetchUsers = async (page = 1, search = "") => {
+  const fetchUsers = async (page = 1, search = '') => {
     try {
-      const response = await axios.post("http://44.196.64.110:8000/admin/getVendor", {
+      const response = await axios.post('http://44.196.64.110:8000/admin/getVendor', {
         search: search,
         page: page,
         limit: LIMIT,
-      });
-      const result = await response.data;
+      })
+      const result = await response.data
 
-      setUsers(result.vendors);
-      setTotalPages(result.totalPages);
-      setCurrentPage(result.currentPage);
-      setTotalUsers(result.totalUsers);
+      setUsers(result.vendors)
+      setTotalPages(result.totalPages)
+      setCurrentPage(result.currentPage)
+      setTotalUsers(result.totalUsers)
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error('Error fetching users:', error)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    fetchUsers()
+  }, [])
 
   const handleSearchUser = (e) => {
-    setSearchUser(e.target.value);
-    fetchUsers(1, e.target.value);
-  };
+    setSearchUser(e.target.value)
+    fetchUsers(1, e.target.value)
+  }
 
   const handleClear = () => {
-    setSearchUser("");
-    fetchUsers(1, "");
-  };
+    setSearchUser('')
+    fetchUsers(1, '')
+  }
 
   const handleApprove = async (id) => {
     try {
-      await axios.post("http://44.196.64.110:8000/admin/verify", {
+      await axios.post('http://44.196.64.110:8000/admin/verify', {
         vendorId: id,
-        status: "approved",
-      });
-      fetchUsers(currentPage, searchUser); 
+        status: 'approved',
+      })
+      fetchUsers(currentPage, searchUser)
     } catch (error) {
-      console.error("Error approving vendor:", error);
+      console.error('Error approving vendor:', error)
     }
-  };
+  }
 
   const handleReject = async (id) => {
     try {
-      console.log(id);
-      
-      await axios.post("http://44.196.64.110:8000/admin/verify", {
-        vendorId: id,
-        status: "rejected",
-      });
-      fetchUsers(currentPage, searchUser); 
-    } catch (error) {
-      console.error("Error rejecting vendor:", error);
-    }
-  };
+      console.log(id)
 
-  const startIndex = (currentPage - 1) * LIMIT + 1;
-  const endIndex = Math.min(currentPage * LIMIT, totalUsers);
+      await axios.post('http://44.196.64.110:8000/admin/verify', {
+        vendorId: id,
+        status: 'rejected',
+      })
+      fetchUsers(currentPage, searchUser)
+    } catch (error) {
+      console.error('Error rejecting vendor:', error)
+    }
+  }
+
+  const startIndex = (currentPage - 1) * LIMIT + 1
+  const endIndex = Math.min(currentPage * LIMIT, totalUsers)
 
   return (
     <>
@@ -123,7 +123,7 @@ const VendorManagement = () => {
                 <CTableDataCell>{user.phone}</CTableDataCell>
                 <CTableDataCell>{user.status}</CTableDataCell>
                 <CTableDataCell>
-                  {user.status === "pending" && (
+                  {user.status === 'pending' ? (
                     <>
                       <CButton onClick={() => handleApprove(user.vendorId)}>
                         <FontAwesomeIcon icon={faCheck} />
@@ -132,6 +132,10 @@ const VendorManagement = () => {
                         <FontAwesomeIcon icon={faBan} />
                       </CButton>
                     </>
+                  ) : user.status === 'approved' ? (
+                    <p className=' text-success'>Approved</p>
+                  ) : (
+                    ''
                   )}
                 </CTableDataCell>
               </CTableRow>
@@ -194,7 +198,7 @@ const VendorManagement = () => {
         }
       `}</style>
     </>
-  );
-};
+  )
+}
 
-export default VendorManagement;
+export default VendorManagement

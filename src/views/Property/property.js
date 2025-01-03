@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {
-  
   CTable,
   CTableHead,
   CTableRow,
@@ -13,11 +12,16 @@ import {
   CModalFooter,
   CModalTitle,
   CButton,
-  CPagination,CPaginationItem,
+  CPagination,
+  CPaginationItem,
+  CFormLabel,
+  CFormInput,
+  CFormSelect,
 } from '@coreui/react'
 import { FaTimes, FaEye } from 'react-icons/fa'
-
+import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
+import { toast, ToastContainer } from 'react-toastify'
 
 const PropertyManagement = () => {
   const [properties, setProperties] = useState([])
@@ -29,6 +33,29 @@ const PropertyManagement = () => {
   const [selectedProperty, setSelectedProperty] = useState(null)
   const [totalProperties, setTotalProperties] = useState(0)
   const LIMIT = 10
+  const [inputModal, setInputModal] = useState(false)
+  const [approvalPropertyId, setApprovalPropertyId] = useState(null)
+  const [formData, setFormData] = useState({
+    adminCommission: '',
+    cancellationCharge: '',
+    dropdownValue: '',
+  })
+
+  // Handle input field change
+  const handleInputChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
+  // Handle dropdown change
+  const handleDropdownChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      dropdownValue: e.target.value,
+    }))
+  }
 
   const fetchProperties = async (page = 1, search = '') => {
     try {
@@ -38,6 +65,7 @@ const PropertyManagement = () => {
         limit: LIMIT,
       })
       const result = await response.data
+      console.log(result)
       const formattedProperties = result.data.map((property) => {
         const formattedStartDate = new Intl.DateTimeFormat('en-US', {
           month: '2-digit',
@@ -67,6 +95,42 @@ const PropertyManagement = () => {
       console.error('Error fetching properties:', error)
     }
   }
+  const handleCommissionApproval = async () => {
+    try {
+      const dataToSubmit = { ...formData, approvalPropertyId }
+      if (
+        !dataToSubmit.adminCommission ||
+        !dataToSubmit.cancellationCharge ||
+        !dataToSubmit.approvalPropertyId ||
+        !dataToSubmit.dropdownValue
+      ) {
+        toast.warn('Please Fill All the Fields')
+        return
+      }
+      if (
+        parseFloat(dataToSubmit.adminCommission) > 100 ||
+        parseFloat(dataToSubmit?.cancellationCharge) > 100
+      ) {
+        toast.warn('Commission Percentage should be less than or equal to 100%')
+        return
+      }
+      const approvalData = await axios.patch(
+        'http://44.196.64.110:8000/property/commission-approve',
+        dataToSubmit,
+      )
+      setFormData({ adminCommission: null, dropdownValue: '' })
+      toast.success(approvalData.data.message)
+      setInputModal(false)
+      fetchProperties()
+    } catch (error) {
+      console.log(error.response)
+      toast.error(error?.response?.data?.message)
+    }
+  }
+  const handleApprovalAction = (property) => {
+    setApprovalPropertyId(property._id)
+    setInputModal(true)
+  }
   const handleViewDetails = (property) => {
     setSelectedProperty(property)
     setDetailsModal(true)
@@ -90,6 +154,7 @@ const PropertyManagement = () => {
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
       <div className="search-container">
         <input
           type="text"
@@ -107,10 +172,12 @@ const PropertyManagement = () => {
             <CTableHeaderCell>Image</CTableHeaderCell> {/* New Image Column */}
             <CTableHeaderCell>Name</CTableHeaderCell>
             <CTableHeaderCell>location</CTableHeaderCell>
-            <CTableHeaderCell>Guest Limit</CTableHeaderCell>
-            <CTableHeaderCell>Guest Pricing</CTableHeaderCell>
             <CTableHeaderCell>Availability</CTableHeaderCell>
+            <CTableHeaderCell className=" text-center">Price Per Person/Day</CTableHeaderCell>
+            <CTableHeaderCell className=" text-center">Commission</CTableHeaderCell>
+            <CTableHeaderCell className=" text-center">Cancel Charge</CTableHeaderCell>
             <CTableHeaderCell>Details</CTableHeaderCell>
+            <CTableHeaderCell>Action</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
         <CTableBody>
@@ -133,14 +200,39 @@ const PropertyManagement = () => {
                 </CTableDataCell>
                 <CTableDataCell>{property.propertyName}</CTableDataCell>
                 <CTableDataCell>{property.location.address}</CTableDataCell>
-                <CTableDataCell>{property.details.guestLimitPerDay}</CTableDataCell>
-                <CTableDataCell>${property.details.guestPricePerDay}</CTableDataCell>
                 <CTableDataCell>
                   {property.startDate} to {property.startDate}
                 </CTableDataCell>
+                <CTableDataCell className=" text-center">
+                  {property.pricePerPersonPerDay}
+                </CTableDataCell>
+                {property?.adminCommission ? (
+                  <CTableDataCell className=" text-center">
+                    {property?.adminCommission}%
+                  </CTableDataCell>
+                ) : (
+                  <CTableDataCell className=" text-center"></CTableDataCell>
+                )}
+                {property?.cancellationCharge ? (
+                  <CTableDataCell className=" text-center">
+                    {property?.cancellationCharge}%
+                  </CTableDataCell>
+                ) : (
+                  <CTableDataCell className=" text-center"></CTableDataCell>
+                )}
+
                 <CTableDataCell>
                   <CButton color="primary" onClick={() => handleViewDetails(property)}>
                     <FaEye />
+                  </CButton>
+                </CTableDataCell>
+                <CTableDataCell>
+                  <CButton
+                    disabled={property?.isApproveByAdmin}
+                    color={!property?.isApproveByAdmin ? 'warning' : 'success'}
+                    onClick={() => handleApprovalAction(property)}
+                  >
+                    {property?.isApproveByAdmin ? 'Approved' : 'Approve'}
                   </CButton>
                 </CTableDataCell>
               </CTableRow>
@@ -169,72 +261,49 @@ const PropertyManagement = () => {
                   <strong>Description:</strong> {selectedProperty.propertyDescription}
                 </p>
 
-                {/* Acreage */}
-                <p>
-                  <strong>Acreage:</strong> {selectedProperty.details.acreage}
-                </p>
-
-                {/* Guest Details */}
-                <p>
-                  <strong>Guest Limit Per Day:</strong> {selectedProperty.details.guestLimitPerDay}
-                </p>
-                <p>
-                  <strong>Guest Price Per Day:</strong> ${selectedProperty.details.guestPricePerDay}
-                </p>
-
-                {/* Guided Hunt */}
-                <p>
-                  <strong>Guided Hunt:</strong> {selectedProperty.details.guidedHunt}
-                </p>
-
-                {/* Lodging */}
-                <p>
-                  <strong>Lodging:</strong> {selectedProperty.details.lodging}
-                </p>
-
-                {/* Shooting Range */}
-                <p>
-                  <strong>Shooting Range:</strong> {selectedProperty.details.shootingRange}
-                </p>
-
-                {/* Optional Extended Details */}
-                <p>
-                  <strong>Optional Extended Details:</strong>{' '}
-                  {selectedProperty.details.optionalExtendedDetails}
-                </p>
-
-                {/* Price Range */}
-                <p>
-                  <strong>Price Range:</strong> ${selectedProperty.priceRange.min} - $
-                  {selectedProperty.priceRange.max}
-                </p>
-
-                {/* Price Per Group Size */}
-                <p>
-                  <strong>Price Per Group Size:</strong>
-                  {selectedProperty.pricePerGroupSize.groupPrice
-                    ? `$${selectedProperty.pricePerGroupSize.groupPrice} for ${selectedProperty.pricePerGroupSize.groupSize} guests`
-                    : `N/A`}
-                </p>
-
-                {/* Instant Booking */}
-                <p>
-                  <strong>Instant Booking:</strong>{' '}
-                  {selectedProperty.details.instantBooking ? 'Yes' : 'No'}
-                </p>
-
                 {/* Address */}
                 <p>
                   <strong>Address:</strong> {selectedProperty.location.address}
                 </p>
-
-                {/* Coordinates */}
                 <p>
-                  <strong>Coordinates:</strong> Latitude: {selectedProperty.location.latitude},
-                  Longitude: {selectedProperty.location.longitude}
+                  <strong>Cancellation Charge : </strong> {"%"+selectedProperty?.cancellationCharge}
                 </p>
+                <p>
+                  <strong>Admin Commission : </strong> {"%"+selectedProperty?.adminCommission}
+                </p>
+                
+                <h4>Custom Details</h4>
+                {selectedProperty.customFields.length > 0 ? (
+                  <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>
+                          Field Name
+                        </th>
+                        <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>
+                          Value
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedProperty.customFields.map((field, index) => (
+                        <tr key={index}>
+                          <td style={{ border: '1px solid #ddd', padding: '8px' }}>{field.key}</td>
+                          <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                            {field.value}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p>No custom fields available.</p>
+                )}
 
                 {/* Vendor ID */}
+                <p>
+                  <strong>Vendor ID:</strong> {selectedProperty.vendorId}
+                </p>
                 <p>
                   <strong>Vendor ID:</strong> {selectedProperty.vendorId}
                 </p>
@@ -301,6 +370,62 @@ const PropertyManagement = () => {
               </CModalFooter>
             </CModal>
           )}
+          <CModal visible={inputModal} onClose={() => setInputModal(false)}>
+            <CModalHeader>
+              <CModalTitle>Please fill Commission and Approval</CModalTitle>
+            </CModalHeader>
+            <CModalBody>
+              {/* Input field */}
+              <div className="mb-3">
+                <CFormLabel htmlFor="adminCommission">
+                  Enter Commission for this Property
+                </CFormLabel>
+                <CFormInput
+                  type="number"
+                  name="adminCommission"
+                  id="adminCommission"
+                  value={formData.adminCommission}
+                  onChange={handleInputChange}
+                  placeholder="Commission Percentage"
+                />
+              </div>
+              <div className="mb-3">
+                <CFormLabel htmlFor="cancellationCharge">
+                  Enter cancellation Charge for this Property
+                </CFormLabel>
+                <CFormInput
+                  type="number"
+                  name="cancellationCharge"
+                  id="cancellationCharge"
+                  value={formData.cancellationCharge}
+                  onChange={handleInputChange}
+                  placeholder="Cancellation Charge in %"
+                />
+              </div>
+
+              {/* Dropdown field */}
+              <div className="mb-3">
+                <CFormLabel htmlFor="dropdown">Approve</CFormLabel>
+                <CFormSelect
+                  id="dropdown"
+                  value={formData.dropdownValue}
+                  onChange={handleDropdownChange}
+                >
+                  <option value="">Select an option</option>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </CFormSelect>
+              </div>
+            </CModalBody>
+            <CModalFooter>
+              <CButton color="primary" onClick={handleCommissionApproval}>
+                Submit
+              </CButton>
+              <CButton color="secondary" onClick={() => setInputModal(false)}>
+                Close
+              </CButton>
+            </CModalFooter>
+          </CModal>
         </CTableBody>
       </CTable>
 
