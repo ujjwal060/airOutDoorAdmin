@@ -96,7 +96,7 @@ const FinancialManagement = () => {
       <CCard>
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <h3>Financial Management</h3>
-          {totalExp && <h5 style={{ color: 'blue' }}>Total Expense:${totalExp}</h5>}
+          {/* {totalExp && <h5 style={{ color: 'blue' }}>Total Expense:${totalExp}</h5>} */}
         </CCardHeader>
 
         <CCardBody>
