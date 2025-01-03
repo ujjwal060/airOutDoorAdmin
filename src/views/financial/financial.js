@@ -17,24 +17,23 @@ import {
   CModalFooter,
   CPagination,
 } from "@coreui/react";
-import { toast } from "react-toastify"; // Make sure to install react-toastify
-import axios from 'axios';
+import { toast } from "react-toastify";
+import axios from "axios";
 
 const FinancialManagement = () => {
   const [vendorsData, setVendorsData] = useState([]);
   const [visible, setVisible] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5); // Items per page for pagination
+  const [itemsPerPage] = useState(5);
 
   useEffect(() => {
     const fetchVendorsData = async () => {
       try {
         const response = await fetch("http://44.196.64.110:8000/payouts/getAll");
         const data = await response.json();
-
-        if (data.status === 200) {
-          setVendorsData(data.data);
+        if (data.status === 200 && Array.isArray(data.data.allPay)) {
+          setVendorsData(data.data.allPay);
         } else {
           toast.error(`Failed to fetch data: ${data.message}`);
         }
@@ -49,20 +48,22 @@ const FinancialManagement = () => {
   const handleViewPayouts = (vendor) => {
     setSelectedVendor(vendor);
     setVisible(true);
-    setCurrentPage(1); // Reset to first page when opening the modal
+    setCurrentPage(1);
   };
 
   const handleApprove = async (vendorid, requestid) => {
-    const response = await axios.post("http://44.196.64.110:8000/payouts/approvePayout", {
-      payoutRequestId:requestid,
-      vendorId:vendorid
-    });
-    
-    toast.success(`Cashout request approved!`);
-  };
+    try {
+      const response = await axios.post("http://44.196.64.110:8000/payouts/approvePayout", {
+        payoutRequestId: requestid,
+        vendorId: vendorid,
+      });
 
-  const handleReject = (vendor, request) => {
-    toast.error(`Cashout request for ${vendor.vendorName} rejected!`);
+      if (response.status === 200) {
+        toast.success("Cashout request approved!");
+      }
+    } catch (error) {
+      toast.error(`Error approving request: ${error.message}`);
+    }
   };
 
   const handleClose = () => {
@@ -70,27 +71,22 @@ const FinancialManagement = () => {
     setSelectedVendor(null);
   };
 
-  // Sort vendors so that those with pending requests come first
   const sortedVendorsData = vendorsData.sort((a, b) => {
-    const aHasPendingRequest = a.cashoutRequests.some(
+    const aHasPendingRequest = a.cashoutRequests?.some(
       (request) => request.status === "pending"
     );
-    const bHasPendingRequest = b.cashoutRequests.some(
+    const bHasPendingRequest = b.cashoutRequests?.some(
       (request) => request.status === "pending"
     );
-    if (aHasPendingRequest && !bHasPendingRequest) return -1;
-    if (!aHasPendingRequest && bHasPendingRequest) return 1;
-    return 0;
+    return aHasPendingRequest && !bHasPendingRequest ? -1 : bHasPendingRequest && !aHasPendingRequest ? 1 : 0;
   });
 
-  // Get current page data for payout requests
   const indexOfLastRequest = currentPage * itemsPerPage;
   const indexOfFirstRequest = indexOfLastRequest - itemsPerPage;
   const currentRequests = selectedVendor
-    ? selectedVendor.cashoutRequests.slice(indexOfFirstRequest, indexOfLastRequest)
+    ? selectedVendor.cashoutRequests?.slice(indexOfFirstRequest, indexOfLastRequest) || []
     : [];
 
-  // Handle page change for pagination
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
   };
@@ -131,7 +127,7 @@ const FinancialManagement = () => {
             <CTableBody>
               {sortedVendorsData.length > 0 ? (
                 sortedVendorsData.map((vendor) => {
-                  const hasPendingRequest = vendor.cashoutRequests.some(
+                  const hasPendingRequest = vendor.cashoutRequests?.some(
                     (request) => request.status === "pending"
                   );
                   return (
@@ -197,7 +193,13 @@ const FinancialManagement = () => {
                 <CTableHead color="dark">
                   <CTableRow>
                     <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                      Remaining
+                    </CTableHeaderCell>
+                    <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
                       Amount Requested
+                    </CTableHeaderCell>
+                    <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
+                      Commission
                     </CTableHeaderCell>
                     <CTableHeaderCell scope="col" style={{ textAlign: "center" }}>
                       Request Date
@@ -217,7 +219,13 @@ const FinancialManagement = () => {
                   {currentRequests.map((request, index) => (
                     <CTableRow key={index}>
                       <CTableDataCell style={{ textAlign: "center" }}>
+                        ${request.remainingAmount}
+                      </CTableDataCell>
+                      <CTableDataCell style={{ textAlign: "center" }}>
                         ${request.amountRequested}
+                      </CTableDataCell>
+                      <CTableDataCell style={{ textAlign: "center" }}>
+                        ${request.adminCommissionDeducted}
                       </CTableDataCell>
                       <CTableDataCell style={{ textAlign: "center" }}>
                         {new Date(request.requestDate).toLocaleDateString()}
@@ -228,37 +236,29 @@ const FinancialManagement = () => {
                       <CTableDataCell style={{ textAlign: "center" }}>
                         {request.paymentDate
                           ? new Date(request.paymentDate).toLocaleDateString()
-                          : "N/A"}
+                          : "-- -- --"}
                       </CTableDataCell>
-                      {/* <CTableDataCell style={{ textAlign: "center" }}>
+                      <CTableDataCell style={{ textAlign: "center" }}>
                         {request.status === "pending" ? (
-                          <>
-                            <CButton
-                              color="success"
-                              onClick={() => handleApprove(selectedVendor.vendorId, request._id)}
-                              className="ms-2"
-                            >
-                              Approve
-                            </CButton>
-                            <CButton
-                              color="danger"
-                              onClick={() => handleReject(selectedVendor.vendorId, request._id)}
-                              className="ms-2"
-                            >
-                              Reject
-                            </CButton>
-                          </>
+                          <CButton
+                            color="success"
+                            onClick={() => handleApprove(selectedVendor.vendorId, request._id)}
+                          >
+                            Approve
+                          </CButton>
+                        ) : request.status === "paid" ? (
+                          <span style={{ color: "green", fontWeight: "bold" }}>Success</span>
                         ) : (
-                          <span>No actions available</span>
+                          <span style={{ color: "gray" }}>Processed</span>
                         )}
-                      </CTableDataCell> */}
+                      </CTableDataCell>
                     </CTableRow>
                   ))}
                 </CTableBody>
               </CTable>
               <CPagination
                 activePage={currentPage}
-                pages={Math.ceil(selectedVendor.cashoutRequests.length / itemsPerPage)}
+                pages={Math.ceil(selectedVendor.cashoutRequests?.length / itemsPerPage)}
                 onActivePageChange={handlePageChange}
               />
             </>
