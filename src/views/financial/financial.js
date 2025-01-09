@@ -28,20 +28,6 @@ const FinancialManagement = () => {
   const [itemsPerPage] = useState(5);
 
   useEffect(() => {
-    const fetchVendorsData = async () => {
-      try {
-        const response = await fetch("http://44.196.64.110:8000/payouts/getAll");
-        const data = await response.json();
-        if (data.status === 200 && Array.isArray(data.data.allPay)) {
-          setVendorsData(data.data.allPay);
-        } else {
-          toast.error(`Failed to fetch data: ${data.message}`);
-        }
-      } catch (error) {
-        toast.error(`Error fetching vendors data: ${error.message}`);
-      }
-    };
-
     fetchVendorsData();
   }, []);
 
@@ -49,6 +35,20 @@ const FinancialManagement = () => {
     setSelectedVendor(vendor);
     setVisible(true);
     setCurrentPage(1);
+  };
+
+  const fetchVendorsData = async () => {
+    try {
+      const response = await fetch("http://44.196.64.110:8000/payouts/getAll");
+      const data = await response.json();
+      if (data.status === 200 && Array.isArray(data.data.allPay)) {
+        setVendorsData(data.data.allPay);
+      } else {
+        toast.error(`Failed to fetch data: ${data.message}`);
+      }
+    } catch (error) {
+      toast.error(`Error fetching vendors data: ${error.message}`);
+    }
   };
 
   const handleApprove = async (vendorid, requestid) => {
@@ -60,6 +60,19 @@ const FinancialManagement = () => {
 
       if (response.status === 200) {
         toast.success("Cashout request approved!");
+  
+        const updatedRequests = selectedVendor.cashoutRequests.map((request) => {
+          if (request._id === requestid) {
+            return { ...request, status: "paid" };
+          }
+          return request;
+        });
+  
+        setSelectedVendor((prev) => ({
+          ...prev,
+          cashoutRequests: updatedRequests,
+        }));
+        fetchVendorsData();
       }
     } catch (error) {
       toast.error(`Error approving request: ${error.message}`);
